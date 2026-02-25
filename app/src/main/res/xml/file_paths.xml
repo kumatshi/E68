@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Для фотографий с камеры -->
+    <external-files-path
+        name="camera_photos"
+        path="Pictures/E68" />
+
+    <!-- Для сохранения отчетов -->
+    <external-files-path
+        name="reports"
+        path="Documents/E68/Reports" />
+
+    <!-- Для временных файлов -->
+    <cache-path
+        name="cache"
+        path="/" />
+
+    <!-- Для файлов из внешнего хранилища -->
+    <external-path
+        name="external"
+        path="." />
+
+    <!-- Для файлов из внутреннего хранилища -->
+    <files-path
+        name="files"
+        path="." />
+</paths>

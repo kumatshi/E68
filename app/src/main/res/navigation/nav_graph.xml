@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <!-- Auth -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.e68.app.presentation.auth.LoginFragment"
+        android:label="Вход"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- Main -->
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.example.e68.app.presentation.main.MainFragment"
+        android:label="Главная"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_mainFragment_to_defectsListFragment"
+            app:destination="@id/defectsListFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_createDefectFragment"
+            app:destination="@id/createDefectFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_patrolFragment"
+            app:destination="@id/patrolFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_analyticsFragment"
+            app:destination="@id/analyticsFragment" />
+    </fragment>
+
+    <!-- Defects -->
+    <fragment
+        android:id="@+id/defectsListFragment"
+        android:name="com.example.e68.app.presentation.defects.DefectsListFragment"
+        android:label="Список дефектов"
+        tools:layout="@layout/fragment_defects_list">
+        <action
+            android:id="@+id/action_defectsListFragment_to_defectDetailFragment"
+            app:destination="@id/defectDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/defectDetailFragment"
+        android:name="com.example.e68.app.presentation.defects.DefectDetailFragment"
+        android:label="Детали дефекта"
+        tools:layout="@layout/fragment_defect_detail" />
+
+    <fragment
+        android:id="@+id/createDefectFragment"
+        android:name="com.example.e68.app.presentation.defects.CreateDefectFragment"
+        android:label="Новый дефект"
+        tools:layout="@layout/fragment_create_defect" />
+
+    <!-- Patrol -->
+    <fragment
+        android:id="@+id/patrolFragment"
+        android:name="com.example.e68.app.presentation.patrol.PatrolFragment"
+        android:label="Объезд"
+        tools:layout="@layout/fragment_patrol" />
+
+    <!-- Analytics -->
+    <fragment
+        android:id="@+id/analyticsFragment"
+        android:name="com.example.e68.app.presentation.analytics.AnalyticsFragment"
+        android:label="Аналитика"
+        tools:layout="@layout/fragment_analytics" />
+
+</navigation>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Главное меню"
+        android:textSize="24sp"
+        android:textColor="@color/primary"
+        android:gravity="center"
+        android:layout_marginBottom="32dp" />
+
+    <Button
+        android:id="@+id/defectsButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Список дефектов"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/createDefectButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Создать дефект"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/patrolButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Объезд"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/analyticsButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Аналитика"
+        android:layout_marginBottom="16dp" />
+
+</LinearLayout>
