@@ -5,74 +5,79 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
 
-    <!-- Auth -->
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.e68.app.presentation.auth.LoginFragment"
         android:label="Вход"
         tools:layout="@layout/fragment_login">
         <action
-            android:id="@+id/action_loginFragment_to_mainFragment"
-            app:destination="@id/mainFragment"
+            android:id="@+id/action_loginFragment_to_mapFragment"
+            app:destination="@id/mapFragment"
             app:popUpTo="@id/loginFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/fade_out" />
     </fragment>
 
-    <!-- Main -->
     <fragment
-        android:id="@+id/mainFragment"
-        android:name="com.example.e68.app.presentation.main.MainFragment"
-        android:label="Главная"
-        tools:layout="@layout/fragment_main">
+        android:id="@+id/mapFragment"
+        android:name="com.example.e68.app.presentation.map.MapFragment"
+        android:label="@string/nav_map"
+        tools:layout="@layout/fragment_map">
         <action
-            android:id="@+id/action_mainFragment_to_defectsListFragment"
-            app:destination="@id/defectsListFragment" />
-        <action
-            android:id="@+id/action_mainFragment_to_createDefectFragment"
-            app:destination="@id/createDefectFragment" />
-        <action
-            android:id="@+id/action_mainFragment_to_patrolFragment"
-            app:destination="@id/patrolFragment" />
-        <action
-            android:id="@+id/action_mainFragment_to_analyticsFragment"
-            app:destination="@id/analyticsFragment" />
+            android:id="@+id/action_map_to_defectDetail"
+            app:destination="@id/defectDetailFragment"
+            app:enterAnim="@anim/slide_in_up"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_down">
+            <argument android:name="defectId" app:argType="long" />
+        </action>
     </fragment>
 
-    <!-- Defects -->
     <fragment
         android:id="@+id/defectsListFragment"
         android:name="com.example.e68.app.presentation.defects.DefectsListFragment"
-        android:label="Список дефектов"
+        android:label="@string/defects_title"
         tools:layout="@layout/fragment_defects_list">
         <action
-            android:id="@+id/action_defectsListFragment_to_defectDetailFragment"
-            app:destination="@id/defectDetailFragment" />
+            android:id="@+id/action_defectsList_to_defectDetail"
+            app:destination="@id/defectDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right">
+            <argument android:name="defectId" app:argType="long" />
+        </action>
+        <action
+            android:id="@+id/action_defectsList_to_createDefect"
+            app:destination="@id/createDefectFragment"
+            app:enterAnim="@anim/slide_in_up"
+            app:popExitAnim="@anim/slide_out_down" />
     </fragment>
 
     <fragment
         android:id="@+id/defectDetailFragment"
         android:name="com.example.e68.app.presentation.defects.DefectDetailFragment"
         android:label="Детали дефекта"
-        tools:layout="@layout/fragment_defect_detail" />
+        tools:layout="@layout/fragment_defect_detail">
+        <argument android:name="defectId" app:argType="long" />
+    </fragment>
 
     <fragment
         android:id="@+id/createDefectFragment"
         android:name="com.example.e68.app.presentation.defects.CreateDefectFragment"
-        android:label="Новый дефект"
+        android:label="@string/create_defect"
         tools:layout="@layout/fragment_create_defect" />
 
-    <!-- Patrol -->
     <fragment
         android:id="@+id/patrolFragment"
         android:name="com.example.e68.app.presentation.patrol.PatrolFragment"
-        android:label="Объезд"
+        android:label="@string/patrol_title"
         tools:layout="@layout/fragment_patrol" />
 
-    <!-- Analytics -->
     <fragment
         android:id="@+id/analyticsFragment"
         android:name="com.example.e68.app.presentation.analytics.AnalyticsFragment"
-        android:label="Аналитика"
+        android:label="@string/analytics_title"
         tools:layout="@layout/fragment_analytics" />
 
 </navigation>

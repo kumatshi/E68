@@ -1,16 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">E68 Road Patrol</string>
-    <string name="start_work">Начать работу</string>
-    <string name="map">Карта</string>
-    <string name="defects">Дефекты</string>
-    <string name="patrol">Объезд</string>
-    <string name="analytics">Аналитика</string>
-    <string name="profile">Профиль</string>
-    <string name="create_defect">Создать дефект</string>
-    <string name="save">Сохранить</string>
-    <string name="cancel">Отмена</string>
-    <string name="loading">Загрузка...</string>
+    <string name="app_name">RoadPatrol</string>
+
+    <!-- Auth -->
+    <string name="login_title">Добро пожаловать</string>
+    <string name="login_subtitle">Система контроля состояния дорог</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Пароль</string>
+    <string name="btn_login">Войти</string>
+    <string name="login_loading">Выполняется вход…</string>
+
+    <!-- Nav -->
+    <string name="nav_map">Карта</string>
+    <string name="nav_defects">Дефекты</string>
+    <string name="nav_patrol">Объезд</string>
+    <string name="nav_analytics">Аналитика</string>
+
+    <!-- Defects -->
+    <string name="defects_title">Дефекты</string>
+    <string name="all_defects">Все</string>
+    <string name="open_defects">Открытые</string>
+    <string name="in_progress_defects">В работе</string>
+    <string name="resolved_defects">Устранены</string>
+    <string name="create_defect">Новый дефект</string>
+    <string name="defect_type">Тип дефекта</string>
+    <string name="defect_address">Адрес</string>
+    <string name="defect_description">Описание</string>
+    <string name="defect_priority">Приоритет</string>
+    <string name="btn_save">Сохранить</string>
+    <string name="btn_cancel">Отмена</string>
+    <string name="attach_photo">Добавить фото</string>
+    <string name="take_photo">Сфотографировать</string>
+    <string name="choose_from_gallery">Из галереи</string>
+
+    <!-- Status labels -->
+    <string name="status_open">Открыт</string>
+    <string name="status_in_progress">В работе</string>
+    <string name="status_resolved">Устранён</string>
+    <string name="status_rejected">Отклонён</string>
+
+    <!-- Severity labels -->
+    <string name="severity_low">Низкий</string>
+    <string name="severity_medium">Средний</string>
+    <string name="severity_high">Высокий</string>
+    <string name="severity_critical">Критический</string>
+
+    <!-- Patrol -->
+    <string name="patrol_title">Объезд</string>
+    <string name="patrol_start">Начать объезд</string>
+    <string name="patrol_stop">Завершить объезд</string>
+    <string name="patrol_active">Объезд активен</string>
+    <string name="patrol_distance">Расстояние</string>
+    <string name="patrol_duration">Время</string>
+    <string name="patrol_defects">Дефекты</string>
+    <string name="patrol_history">История объездов</string>
+    <string name="route_name_hint">Название маршрута</string>
+
+    <!-- Analytics -->
+    <string name="analytics_title">Аналитика</string>
+    <string name="total_defects">Всего дефектов</string>
+    <string name="resolved_rate">Устранено</string>
+    <string name="avg_resolve_time">Среднее время</string>
+    <string name="by_type">По типу</string>
+    <string name="by_status">По статусу</string>
+    <string name="export_pdf">Экспорт PDF</string>
+    <string name="export_excel">Экспорт Excel</string>
+
+    <!-- Common -->
+    <string name="loading">Загрузка…</string>
     <string name="error">Ошибка</string>
-    <string name="no_internet">Нет подключения к интернету</string>
+    <string name="retry">Повторить</string>
+    <string name="no_internet">Нет подключения</string>
+    <string name="offline_mode">Офлайн режим</string>
+    <string name="syncing">Синхронизация…</string>
+    <string name="synced">Синхронизировано</string>
+    <string name="pending_sync">Ожидает синхронизации</string>
+    <string name="empty_list">Список пуст</string>
+    <string name="confirm_delete">Удалить дефект?</string>
+    <string name="delete">Удалить</string>
+    <string name="km">км</string>
+    <string name="meters">м</string>
 </resources>

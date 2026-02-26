@@ -1,13 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background">
 
-    <TextView
-        android:id="@+id/placeholderText"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textSize="18sp" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-</FrameLayout>
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="20dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="@string/analytics_title"
+                android:textColor="@color/text_primary"
+                android:textSize="26sp" android:textStyle="bold" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/exportPdfBtn"
+                style="@style/Widget.E68.Button.Secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="PDF"
+                app:icon="@drawable/ic_pdf"
+                android:layout_marginEnd="8dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/exportExcelBtn"
+                style="@style/Widget.E68.Button.Secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Excel"
+                app:icon="@drawable/ic_excel" />
+        </LinearLayout>
+
+        <!-- KPI Cards Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content" android:layout_marginEnd="8dp"
+                style="@style/Widget.E68.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                        android:src="@drawable/ic_defects_total" app:tint="@color/primary"
+                        android:layout_marginBottom="8dp" />
+                    <TextView android:id="@+id/kpiTotal" android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:text="—"
+                        android:textColor="@color/text_primary" android:textSize="28sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="@string/total_defects" android:textColor="@color/text_secondary" android:textSize="11sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content"
+                style="@style/Widget.E68.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                        android:src="@drawable/ic_resolved" app:tint="@color/accent_green"
+                        android:layout_marginBottom="8dp" />
+                    <TextView android:id="@+id/kpiResolved" android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:text="—"
+                        android:textColor="@color/accent_green" android:textSize="28sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="@string/resolved_rate" android:textColor="@color/text_secondary" android:textSize="11sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- By Status section -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.E68.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/by_status" android:textColor="@color/text_primary"
+                    android:textSize="16sp" android:textStyle="bold" android:layout_marginBottom="14dp" />
+
+                <!-- Status progress bars -->
+                <LinearLayout android:id="@+id/statusContainer"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- By Type section -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.E68.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/by_type" android:textColor="@color/text_primary"
+                    android:textSize="16sp" android:textStyle="bold" android:layout_marginBottom="14dp" />
+
+                <LinearLayout android:id="@+id/typeContainer"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

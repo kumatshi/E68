@@ -1,20 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Brand Colors -->
+    <color name="primary">#FF6B35</color>
+    <color name="primary_dark">#E55A27</color>
+    <color name="primary_light">#FF8C5A</color>
+    <color name="secondary">#1A1F2E</color>
+    <color name="secondary_dark">#0F1320</color>
+    <color name="accent">#FFD166</color>
+    <color name="accent_green">#06D6A0</color>
 
-    <!-- E68 Colors -->
-    <color name="primary">#3F51B5</color>
-    <color name="primary_dark">#303F9F</color>
-    <color name="primary_light">#C5CAE9</color>
-    <color name="accent">#FF4081</color>
-    <color name="status_open">#F44336</color>
-    <color name="status_in_progress">#FF9800</color>
-    <color name="status_resolved">#4CAF50</color>
-    <color name="status_rejected">#9E9E9E</color>
+    <!-- Surface Colors -->
+    <color name="surface">#1E2435</color>
+    <color name="surface_elevated">#252B3D</color>
+    <color name="surface_high">#2D3449</color>
+    <color name="background">#131722</color>
+    <color name="divider">#2A3148</color>
+
+    <!-- Text -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#8892A4</color>
+    <color name="text_hint">#4A5568</color>
+
+    <!-- Status Colors -->
+    <color name="status_open">#FF4757</color>
+    <color name="status_open_bg">#331320</color>
+    <color name="status_in_progress">#FFD166</color>
+    <color name="status_in_progress_bg">#332B0A</color>
+    <color name="status_resolved">#06D6A0</color>
+    <color name="status_resolved_bg">#0A2B23</color>
+    <color name="status_rejected">#8892A4</color>
+    <color name="status_rejected_bg">#1A1F2E</color>
+
+    <!-- Severity -->
+    <color name="severity_low">#06D6A0</color>
+    <color name="severity_medium">#FFD166</color>
+    <color name="severity_high">#FF6B35</color>
+    <color name="severity_critical">#FF4757</color>
+
+    <!-- Utility -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+    <color name="overlay">#80000000</color>
+    <color name="ripple">#20FF6B35</color>
+
+    <!-- Map overlay -->
+    <color name="map_overlay">#CC131722</color>
 </resources>
+
