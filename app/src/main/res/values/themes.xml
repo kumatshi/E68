@@ -99,4 +99,11 @@
         <item name="strokeColor">@color/divider</item>
         <item name="strokeWidth">1dp</item>
     </style>
+
+    <style name="SwitchOrange" parent="Theme.MaterialComponents">
+        <item name="colorControlActivated">@color/primary</item>
+        <item name="colorSwitchThumbNormal">@color/text_hint</item>
+        <item name="android:colorForeground">@color/text_hint</item>
+    </style>
+
 </resources>

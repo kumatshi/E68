@@ -5,11 +5,15 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
 
+    <!-- ══════════════════════════════════════════
+         ЭКРАН ВХОДА
+         ══════════════════════════════════════════ -->
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.e68.app.presentation.auth.LoginFragment"
         android:label="Вход"
         tools:layout="@layout/fragment_login">
+
         <action
             android:id="@+id/action_loginFragment_to_mainFragment"
             app:destination="@id/nav_map"
@@ -17,27 +21,35 @@
             app:popUpToInclusive="true"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/fade_out" />
+
         <action
             android:id="@+id/action_loginFragment_to_managerFragment"
             app:destination="@id/managerFragment"
             app:popUpTo="@id/loginFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/fade_out" />
 
         <action
             android:id="@+id/action_loginFragment_to_adminFragment"
             app:destination="@id/adminFragment"
             app:popUpTo="@id/loginFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/fade_out" />
     </fragment>
 
-    <!-- Карта — id совпадает с пунктом меню nav_map -->
+    <!-- ══════════════════════════════════════════
+         ИНСПЕКТОР — 4 вкладки нижней панели
+         ID каждого = ID пункта в menu_bottom_nav_inspector.xml
+         ══════════════════════════════════════════ -->
+
     <fragment
         android:id="@+id/nav_map"
         android:name="com.example.e68.app.presentation.map.MapFragment"
         android:label="@string/nav_map"
         tools:layout="@layout/fragment_map" />
 
-    <!-- Дефекты — id совпадает с nav_defects -->
     <fragment
         android:id="@+id/nav_defects"
         android:name="com.example.e68.app.presentation.defects.DefectsListFragment"
@@ -57,21 +69,30 @@
             app:popExitAnim="@anim/slide_out_down" />
     </fragment>
 
-    <!-- Объезд — id совпадает с nav_patrol -->
     <fragment
         android:id="@+id/nav_patrol"
         android:name="com.example.e68.app.presentation.patrol.PatrolFragment"
         android:label="@string/patrol_title"
         tools:layout="@layout/fragment_patrol" />
 
-    <!-- Аналитика — id совпадает с nav_analytics -->
     <fragment
-        android:id="@+id/nav_analytics"
-        android:name="com.example.e68.app.presentation.analytics.AnalyticsFragment"
-        android:label="@string/analytics_title"
-        tools:layout="@layout/fragment_analytics" />
+        android:id="@+id/nav_profile"
+        android:name="com.example.e68.app.presentation.profile.ProfileFragment"
+        android:label="Профиль"
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_profileFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
 
-    <!-- Второстепенные экраны (не в нижней панели) -->
+    <!-- ══════════════════════════════════════════
+         ИНСПЕКТОР — вторичные экраны (без панели)
+         ══════════════════════════════════════════ -->
+
     <fragment
         android:id="@+id/defectDetailFragment"
         android:name="com.example.e68.app.presentation.defects.DefectDetailFragment"
@@ -86,16 +107,130 @@
         android:label="@string/create_defect"
         tools:layout="@layout/fragment_create_defect" />
 
+    <!-- ══════════════════════════════════════════
+         МЕНЕДЖЕР — 5 вкладок нижней панели
+         ID каждого = ID пункта в menu_bottom_nav_manager.xml
+         ══════════════════════════════════════════ -->
+
+    <!-- Стартовый экран менеджера = карта -->
     <fragment
         android:id="@+id/managerFragment"
         android:name="com.example.e68.app.presentation.manager.ManagerFragment"
-        android:label="Менеджер"
-        tools:layout="@layout/fragment_manager" />
+        android:label="Карта"
+        tools:layout="@layout/fragment_manager_map" />
 
+    <!-- Карта менеджера (совпадает с nav_manager_map в меню) -->
+    <fragment
+        android:id="@+id/nav_manager_map"
+        android:name="com.example.e68.app.presentation.manager.ManagerFragment"
+        android:label="Карта"
+        tools:layout="@layout/fragment_manager_map" />
+
+    <!-- Дефекты менеджера (совпадает с nav_manager_defects в меню) -->
+    <fragment
+        android:id="@+id/nav_manager_defects"
+        android:name="com.example.e68.app.presentation.defects.DefectsListFragment"
+        android:label="Дефекты"
+        tools:layout="@layout/fragment_defects_list">
+        <action
+            android:id="@+id/action_managerDefects_to_defectDetail"
+            app:destination="@id/defectDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right">
+            <argument android:name="defectId" app:argType="long" />
+        </action>
+    </fragment>
+
+    <!-- Объезды инспекторов (совпадает с nav_manager_patrols в меню) -->
+    <fragment
+        android:id="@+id/nav_manager_patrols"
+        android:name="com.example.e68.app.presentation.manager.ManagerPatrolsFragment"
+        android:label="Объезды"
+        tools:layout="@layout/fragment_manager_patrols" />
+
+    <!-- Аналитика менеджера (совпадает с nav_manager_analytics в меню) -->
+    <fragment
+        android:id="@+id/nav_manager_analytics"
+        android:name="com.example.e68.app.presentation.analytics.AnalyticsFragment"
+        android:label="Аналитика"
+        tools:layout="@layout/fragment_analytics" />
+
+    <!-- Профиль менеджера (совпадает с nav_manager_profile в меню) -->
+    <fragment
+        android:id="@+id/nav_manager_profile"
+        android:name="com.example.e68.app.presentation.profile.ProfileFragment"
+        android:label="Профиль"
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_managerProfile_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
+
+    <!-- ══════════════════════════════════════════
+         АДМИНИСТРАТОР — 5 вкладок нижней панели
+         ID каждого = ID пункта в menu_bottom_nav_admin.xml
+         ══════════════════════════════════════════ -->
+
+    <!-- Стартовый экран админа = список сотрудников -->
     <fragment
         android:id="@+id/adminFragment"
         android:name="com.example.e68.app.presentation.admin.AdminFragment"
-        android:label="Админ"
-        tools:layout="@layout/fragment_admin" />
+        android:label="Сотрудники"
+        tools:layout="@layout/fragment_admin_users" />
+
+    <!-- Сотрудники (совпадает с nav_admin_users в меню) -->
+    <fragment
+        android:id="@+id/nav_admin_users"
+        android:name="com.example.e68.app.presentation.admin.AdminFragment"
+        android:label="Сотрудники"
+        tools:layout="@layout/fragment_admin_users" />
+
+    <!-- Дефекты админа (совпадает с nav_admin_defects в меню) -->
+    <fragment
+        android:id="@+id/nav_admin_defects"
+        android:name="com.example.e68.app.presentation.defects.DefectsListFragment"
+        android:label="Дефекты"
+        tools:layout="@layout/fragment_defects_list">
+        <action
+            android:id="@+id/action_adminDefects_to_defectDetail"
+            app:destination="@id/defectDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right">
+            <argument android:name="defectId" app:argType="long" />
+        </action>
+    </fragment>
+
+    <!-- Аналитика админа (совпадает с nav_admin_analytics в меню) -->
+    <fragment
+        android:id="@+id/nav_admin_analytics"
+        android:name="com.example.e68.app.presentation.analytics.AnalyticsFragment"
+        android:label="Аналитика"
+        tools:layout="@layout/fragment_analytics" />
+
+    <!-- Настройки системы (совпадает с nav_admin_settings в меню) -->
+    <fragment
+        android:id="@+id/nav_admin_settings"
+        android:name="com.example.e68.app.presentation.admin.AdminSettingsFragment"
+        android:label="Настройки"
+        tools:layout="@layout/fragment_admin_settings" />
+
+    <!-- Профиль администратора (совпадает с nav_admin_profile в меню) -->
+    <fragment
+        android:id="@+id/nav_admin_profile"
+        android:name="com.example.e68.app.presentation.profile.ProfileFragment"
+        android:label="Профиль"
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_adminProfile_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
 
 </navigation>

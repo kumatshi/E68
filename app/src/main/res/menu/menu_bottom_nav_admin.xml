@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/menu/menu_bottom_nav_admin.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_admin_users"
+        android:icon="@drawable/ic_person"
+        android:title="Сотрудники" />
+    <item
+        android:id="@+id/nav_admin_defects"
+        android:icon="@drawable/ic_defects"
+        android:title="Дефекты" />
+    <item
+        android:id="@+id/nav_admin_analytics"
+        android:icon="@drawable/ic_analytics"
+        android:title="Аналитика" />
+    <item
+        android:id="@+id/nav_admin_settings"
+        android:icon="@drawable/ic_info"
+        android:title="Настройки" />
+    <item
+        android:id="@+id/nav_admin_profile"
+        android:icon="@drawable/ic_lock"
+        android:title="Профиль" />
+</menu>

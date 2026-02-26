@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- res/menu/menu_bottom_nav_inspector.xml -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_map"
         android:icon="@drawable/ic_map"
-        android:title="@string/nav_map" />
+        android:title="Карта" />
     <item
         android:id="@+id/nav_defects"
         android:icon="@drawable/ic_defects"
-        android:title="@string/nav_defects" />
+        android:title="Дефекты" />
     <item
         android:id="@+id/nav_patrol"
         android:icon="@drawable/ic_patrol_nav"
-        android:title="@string/nav_patrol" />
-    <item
-        android:id="@+id/nav_analytics"
-        android:icon="@drawable/ic_analytics"
-        android:title="@string/nav_analytics" />
+        android:title="Объезд" />
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_person"

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/fragment_admin_settings.xml -->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Настройки системы"
+            android:textColor="@color/text_primary"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="16dp" />
+
+        <!-- Система -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="СИСТЕМА" android:textSize="11sp" android:textColor="@color/text_hint"
+            android:textStyle="bold" android:letterSpacing="0.1"
+            android:paddingStart="20dp" android:paddingBottom="8dp" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.E68.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Firebase статус -->
+                <LinearLayout android:id="@+id/rowFirebase"
+                    android:layout_width="match_parent" android:layout_height="56dp"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingStart="16dp" android:paddingEnd="16dp">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_sync" app:tint="@color/status_resolved"
+                        android:layout_marginEnd="14dp" />
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Firebase" android:textSize="15sp" android:textColor="@color/text_primary" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Подключён" android:textSize="12sp" android:textColor="@color/status_resolved" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:background="@color/divider" android:layout_marginStart="50dp" />
+
+                <!-- Версия ГОСТ -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingStart="16dp" android:paddingEnd="16dp">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_description" app:tint="@color/text_secondary"
+                        android:layout_marginEnd="14dp" />
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Стандарт дефектов" android:textSize="15sp" android:textColor="@color/text_primary" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="ГОСТ Р 50597-2017" android:textSize="12sp" android:textColor="@color/text_hint" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:background="@color/divider" android:layout_marginStart="50dp" />
+
+                <!-- Версия приложения -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingStart="16dp" android:paddingEnd="16dp">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_info" app:tint="@color/text_secondary"
+                        android:layout_marginEnd="14dp" />
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Версия приложения" android:textSize="15sp" android:textColor="@color/text_primary" />
+                        <TextView android:id="@+id/tvVersionName" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:text="1.0.0"
+                            android:textSize="12sp" android:textColor="@color/text_hint" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Данные -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="ДАННЫЕ" android:textSize="11sp" android:textColor="@color/text_hint"
+            android:textStyle="bold" android:letterSpacing="0.1"
+            android:paddingStart="20dp" android:paddingTop="20dp" android:paddingBottom="8dp" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.E68.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout android:id="@+id/rowExportAll"
+                    android:layout_width="match_parent" android:layout_height="56dp"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingStart="16dp" android:paddingEnd="16dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true" android:focusable="true">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_excel" app:tint="@color/status_resolved"
+                        android:layout_marginEnd="14dp" />
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Экспорт всех данных"
+                        android:textSize="15sp" android:textColor="@color/text_primary" />
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                        android:src="@drawable/ic_open_map" app:tint="@color/text_hint" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:background="@color/divider" android:layout_marginStart="50dp" />
+
+                <LinearLayout android:id="@+id/rowExportPdf"
+                    android:layout_width="match_parent" android:layout_height="56dp"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingStart="16dp" android:paddingEnd="16dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true" android:focusable="true">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_pdf" app:tint="@color/status_open"
+                        android:layout_marginEnd="14dp" />
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Генерация PDF-отчёта"
+                        android:textSize="15sp" android:textColor="@color/text_primary" />
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                        android:src="@drawable/ic_open_map" app:tint="@color/text_hint" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Уведомления -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="УВЕДОМЛЕНИЯ" android:textSize="11sp" android:textColor="@color/text_hint"
+            android:textStyle="bold" android:letterSpacing="0.1"
+            android:paddingStart="20dp" android:paddingTop="20dp" android:paddingBottom="8dp" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.E68.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingStart="16dp" android:paddingEnd="16dp">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_warning" app:tint="@color/text_secondary"
+                        android:layout_marginEnd="14dp" />
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Push-уведомления"
+                        android:textSize="15sp" android:textColor="@color/text_primary" />
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchPush"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:theme="@style/SwitchOrange" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</ScrollView>

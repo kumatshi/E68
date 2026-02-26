@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/menu/menu_bottom_nav_manager.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_manager_map"
+        android:icon="@drawable/ic_map"
+        android:title="Карта" />
+    <item
+        android:id="@+id/nav_manager_defects"
+        android:icon="@drawable/ic_defects"
+        android:title="Дефекты" />
+    <item
+        android:id="@+id/nav_manager_patrols"
+        android:icon="@drawable/ic_patrol_nav"
+        android:title="Объезды" />
+    <item
+        android:id="@+id/nav_manager_analytics"
+        android:icon="@drawable/ic_analytics"
+        android:title="Аналитика" />
+    <item
+        android:id="@+id/nav_manager_profile"
+        android:icon="@drawable/ic_person"
+        android:title="Профиль" />
+</menu>
