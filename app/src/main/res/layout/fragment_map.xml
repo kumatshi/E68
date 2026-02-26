@@ -5,46 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <fragment
-        android:id="@+id/googleMap"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <com.yandex.mapkit.mapview.MapView
+        android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-    <!-- Legend -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|start"
-        android:layout_margin="16dp"
-        android:layout_marginTop="24dp"
-        app:cardBackgroundColor="#CC1E2435"
-        app:cardCornerRadius="12dp">
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:orientation="vertical" android:padding="12dp">
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
-                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_dot"
-                    android:backgroundTint="#FF4757" android:layout_marginEnd="8dp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Открыт" android:textColor="#AABBCC" android:textSize="12sp" />
-            </LinearLayout>
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
-                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_dot"
-                    android:backgroundTint="#FFD166" android:layout_marginEnd="8dp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="В работе" android:textColor="#AABBCC" android:textSize="12sp" />
-            </LinearLayout>
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:gravity="center_vertical">
-                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_dot"
-                    android:backgroundTint="#06D6A0" android:layout_marginEnd="8dp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Устранён" android:textColor="#AABBCC" android:textSize="12sp" />
-            </LinearLayout>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
 
     <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton

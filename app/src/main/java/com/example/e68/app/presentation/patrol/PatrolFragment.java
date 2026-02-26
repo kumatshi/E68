@@ -1,45 +1,35 @@
 package com.example.e68.app.presentation.patrol;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.e68.app.databinding.FragmentPatrolBinding;
 import com.example.e68.app.presentation.common.BaseFragment;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.yandex.mapkit.MapKitFactory;
+import com.yandex.mapkit.geometry.Point;
+import com.yandex.mapkit.geometry.Polyline;
+import com.yandex.mapkit.map.CameraPosition;
+import com.yandex.mapkit.map.MapObjectCollection;
+import com.yandex.mapkit.map.PolylineMapObject;
 import dagger.hilt.android.AndroidEntryPoint;
-import android.graphics.Color;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 @AndroidEntryPoint
-public class PatrolFragment extends BaseFragment<FragmentPatrolBinding> implements OnMapReadyCallback {
+public class PatrolFragment extends BaseFragment<FragmentPatrolBinding> {
 
     private PatrolViewModel viewModel;
-    private GoogleMap googleMap;
+    private MapObjectCollection mapObjects;
     private final Handler timerHandler = new Handler(Looper.getMainLooper());
     private long elapsedSeconds = 0;
-
-    private final ActivityResultLauncher<String> locationPermLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
-                if (granted && googleMap != null) enableMapLocation();
-            });
 
     private final Runnable timerRunnable = new Runnable() {
         @Override
@@ -49,13 +39,15 @@ public class PatrolFragment extends BaseFragment<FragmentPatrolBinding> implemen
             long m = TimeUnit.SECONDS.toMinutes(elapsedSeconds) % 60;
             long s = elapsedSeconds % 60;
             if (binding != null)
-                binding.durationValue.setText(String.format(Locale.getDefault(), "%02d:%02d:%02d", h, m, s));
+                binding.durationValue.setText(
+                        String.format(Locale.getDefault(), "%02d:%02d:%02d", h, m, s));
             timerHandler.postDelayed(this, 1000);
         }
     };
 
     @Override
-    protected FragmentPatrolBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+    protected FragmentPatrolBinding inflateBinding(@NonNull LayoutInflater inflater,
+                                                   @Nullable ViewGroup container) {
         return FragmentPatrolBinding.inflate(inflater, container, false);
     }
 
@@ -64,9 +56,11 @@ public class PatrolFragment extends BaseFragment<FragmentPatrolBinding> implemen
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(PatrolViewModel.class);
 
-        SupportMapFragment mapFrag = (SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(com.example.e68.app.R.id.patrolMapFragment);
-        if (mapFrag != null) mapFrag.getMapAsync(this);
+        // Начальная позиция карты
+        binding.patrolMapView.getMap().move(
+                new CameraPosition(new Point(55.7558, 37.6173), 12f, 0f, 0f)
+        );
+        mapObjects = binding.patrolMapView.getMap().getMapObjects();
 
         setupButtons();
         observeViewModel();
@@ -74,15 +68,15 @@ public class PatrolFragment extends BaseFragment<FragmentPatrolBinding> implemen
 
     private void setupButtons() {
         binding.btnStartPatrol.setOnClickListener(v -> {
-            String name = binding.routeNameEditText.getText() != null ?
-                    binding.routeNameEditText.getText().toString().trim() : "";
-            if (name.isEmpty()) name = "Маршрут " + java.text.SimpleDateFormat.getDateInstance().format(new java.util.Date());
+            String name = binding.routeNameEditText.getText() != null
+                    ? binding.routeNameEditText.getText().toString().trim() : "";
+            if (name.isEmpty())
+                name = "Маршрут " + java.text.SimpleDateFormat
+                        .getDateInstance().format(new java.util.Date());
             viewModel.startPatrol(name);
         });
 
-        binding.btnStopPatrol.setOnClickListener(v -> {
-            viewModel.stopPatrol();
-        });
+        binding.btnStopPatrol.setOnClickListener(v -> viewModel.stopPatrol());
     }
 
     private void observeViewModel() {
@@ -102,59 +96,47 @@ public class PatrolFragment extends BaseFragment<FragmentPatrolBinding> implemen
         viewModel.getActiveRoute().observe(getViewLifecycleOwner(), route -> {
             if (route != null) {
                 binding.routeNameLabel.setText(route.getName());
-                binding.distanceValue.setText(String.format(Locale.getDefault(), "%.0f", route.getDistance()));
-                binding.defectsFoundValue.setText(String.valueOf(route.getDefectsFound()));
+                binding.distanceValue.setText(
+                        String.format(Locale.getDefault(), "%.0f", route.getDistance()));
+                binding.defectsFoundValue.setText(
+                        String.valueOf(route.getDefectsFound()));
             }
         });
 
         viewModel.getRoutePoints().observe(getViewLifecycleOwner(), points -> {
-            if (googleMap == null || points == null || points.size() < 2) return;
-            // Draw the track polyline
-            PolylineOptions opts = new PolylineOptions()
-                    .color(Color.parseColor("#FF6B35"))
-                    .width(8f)
-                    .geodesic(true);
-            for (com.example.e68.app.domain.entity.GpsPoint p : points) {
-                opts.add(new LatLng(p.getLatitude(), p.getLongitude()));
-            }
-            googleMap.clear();
-            googleMap.addPolyline(opts);
+            if (points == null || points.size() < 2) return;
 
-            // Follow last point
-            com.example.e68.app.domain.entity.GpsPoint last = points.get(points.size() - 1);
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(last.getLatitude(), last.getLongitude()), 16f));
+            // Строим полилинию маршрута
+            List<Point> yandexPoints = new ArrayList<>();
+            for (com.example.e68.app.domain.entity.GpsPoint p : points) {
+                yandexPoints.add(new Point(p.getLatitude(), p.getLongitude()));
+            }
+
+            mapObjects.clear();
+            PolylineMapObject polyline = mapObjects.addPolyline(new Polyline(yandexPoints));
+            polyline.setStrokeColor(0xFFFF6B35); // оранжевый
+            polyline.setStrokeWidth(5f);
+
+            // Следим за последней точкой
+            Point last = yandexPoints.get(yandexPoints.size() - 1);
+            binding.patrolMapView.getMap().move(
+                    new CameraPosition(last, 16f, 0f, 0f)
+            );
         });
     }
 
     @Override
-    public void onMapReady(@NonNull GoogleMap map) {
-        this.googleMap = map;
-        // Dark map style
-        try {
-            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(),
-                    com.example.e68.app.R.raw.map_style_dark));
-        } catch (Exception ignored) {}
-
-        map.getUiSettings().setZoomControlsEnabled(false);
-        map.getUiSettings().setCompassEnabled(true);
-        map.getUiSettings().setMyLocationButtonEnabled(false);
-
-        if (ActivityCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            enableMapLocation();
-        } else {
-            locationPermLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
+    public void onStart() {
+        super.onStart();
+        MapKitFactory.getInstance().onStart();
+        binding.patrolMapView.onStart();
     }
 
-    private void enableMapLocation() {
-        try {
-            if (ActivityCompat.checkSelfPermission(requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                googleMap.setMyLocationEnabled(true);
-            }
-        } catch (Exception ignored) {}
+    @Override
+    public void onStop() {
+        binding.patrolMapView.onStop();
+        MapKitFactory.getInstance().onStop();
+        super.onStop();
     }
 
     @Override

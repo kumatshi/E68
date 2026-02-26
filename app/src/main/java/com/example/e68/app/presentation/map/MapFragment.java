@@ -1,134 +1,59 @@
 package com.example.e68.app.presentation.map;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.Navigation;
-import com.example.e68.app.R;
+import androidx.fragment.app.Fragment;
 import com.example.e68.app.databinding.FragmentMapBinding;
-import com.example.e68.app.domain.entity.Defect;
-import com.example.e68.app.presentation.common.BaseFragment;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.clustering.ClusterManager;
+import com.yandex.mapkit.MapKitFactory;
+import com.yandex.mapkit.geometry.Point;
+import com.yandex.mapkit.map.CameraPosition;
 import dagger.hilt.android.AndroidEntryPoint;
-import java.util.List;
 
 @AndroidEntryPoint
-public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnMapReadyCallback {
+public class MapFragment extends Fragment {
 
-    private MapViewModel viewModel;
-    private GoogleMap googleMap;
-    private ClusterManager<DefectMarker> clusterManager;
+    private FragmentMapBinding binding;
 
-    private final ActivityResultLauncher<String> locationPermLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
-                if (granted && googleMap != null) enableMyLocation();
-            });
-
+    @Nullable
     @Override
-    protected FragmentMapBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
-        return FragmentMapBinding.inflate(inflater, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        binding = FragmentMapBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(MapViewModel.class);
 
-        SupportMapFragment mapFrag = (SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(R.id.googleMap);
-        if (mapFrag != null) mapFrag.getMapAsync(this);
-
-        // FAB create defect
-        binding.fabAddDefect.setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_defectsList_to_createDefect));
+        // Москва по умолчанию
+        binding.mapView.getMap().move(
+                new CameraPosition(new Point(55.7558, 37.6173), 12f, 0f, 0f)
+        );
     }
 
     @Override
-    public void onMapReady(@NonNull GoogleMap map) {
-        this.googleMap = map;
-
-        // Apply dark style
-        try {
-            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style_dark));
-        } catch (Exception ignored) {}
-
-        map.getUiSettings().setZoomControlsEnabled(false);
-        map.getUiSettings().setCompassEnabled(false);
-        map.getUiSettings().setMyLocationButtonEnabled(false);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(55.7558, 37.6173), 12f));
-
-        setupClustering();
-        observeDefects();
-
-        if (ActivityCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            enableMyLocation();
-        } else {
-            locationPermLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
+    public void onStart() {
+        super.onStart();
+        MapKitFactory.getInstance().onStart();
+        binding.mapView.onStart();
     }
 
-    private void setupClustering() {
-        clusterManager = new ClusterManager<>(requireContext(), googleMap);
-        googleMap.setOnCameraIdleListener(() -> {
-            clusterManager.onCameraIdle();
-            viewModel.onBoundsChanged(googleMap.getProjection().getVisibleRegion().latLngBounds);
-        });
-        googleMap.setOnMarkerClickListener(clusterManager);
-        clusterManager.setOnClusterItemClickListener(item -> {
-            // Navigate to defect detail
-            MapFragmentDirections.ActionMapToDefectDetail action =
-                    MapFragmentDirections.actionMapToDefectDetail(item.getDefectId());
-            Navigation.findNavController(requireView()).navigate(action);
-            return true;
-        });
+    @Override
+    public void onStop() {
+        binding.mapView.onStop();
+        MapKitFactory.getInstance().onStop();
+        super.onStop();
     }
 
-    private void observeDefects() {
-        viewModel.getDefects().observe(getViewLifecycleOwner(), defects -> {
-            if (clusterManager != null && defects != null) {
-                clusterManager.clearItems();
-                for (Defect d : defects) {
-                    clusterManager.addItem(new DefectMarker(d));
-                }
-                clusterManager.cluster();
-            }
-        });
-    }
-
-    private void enableMyLocation() {
-        try {
-            if (ActivityCompat.checkSelfPermission(requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                googleMap.setMyLocationEnabled(true);
-            }
-        } catch (Exception ignored) {}
-    }
-
-    private float getHueForStatus(String status) {
-        switch (status != null ? status : "") {
-            case "OPEN":        return BitmapDescriptorFactory.HUE_RED;
-            case "IN_PROGRESS": return BitmapDescriptorFactory.HUE_ORANGE;
-            case "RESOLVED":    return BitmapDescriptorFactory.HUE_GREEN;
-            case "REJECTED":    return BitmapDescriptorFactory.HUE_AZURE;
-            default:            return BitmapDescriptorFactory.HUE_VIOLET;
-        }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

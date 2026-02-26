@@ -67,7 +67,7 @@
         app:itemTextColor="@color/selector_nav_item"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/menu_bottom_nav"
-        app:itemActiveIndicatorColor="@color/ripple"
+        
         app:elevation="16dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

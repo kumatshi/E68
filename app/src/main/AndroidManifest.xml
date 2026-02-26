@@ -51,10 +51,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Google Maps API Key (временный, замените на свой) -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_API_KEY_HERE" />
+        <!-- Яндекс MapKit API Key: добавьте здесь после подключения SDK -->
 
     </application>
 

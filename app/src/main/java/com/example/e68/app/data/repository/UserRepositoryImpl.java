@@ -32,7 +32,7 @@ public class UserRepositoryImpl implements UserRepository {
         new android.os.Handler().postDelayed(() -> {
             if (email.equals("test@test.com") && password.equals("123456")) {
                 User user = new User();
-                user.setId(1);
+
                 user.setEmail(email);
                 user.setName("Тестовый пользователь");
                 user.setRole("INSPECTOR");

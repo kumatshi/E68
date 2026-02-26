@@ -1,26 +1,28 @@
 package com.example.e68.app.domain.entity;
 
+import com.google.firebase.firestore.IgnoreExtraProperties;
+
+@IgnoreExtraProperties
 public class User {
 
-    private long id;
-    private String email;
+    private String uid;
     private String name;
-    private String role; // INSPECTOR, DISPATCHER, SUPERVISOR, ADMIN
+    private String email;
+    private String role;
     private String department;
-    private String photoUrl;
+    private boolean isActive;
 
-    public User() {
-    }
+    // Обязательный пустой конструктор для Firestore
+    public User() {}
 
-    // Геттеры и сеттеры
-    public long getId() { return id; }
-    public void setId(long id) { this.id = id; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getUid() { return uid; }
+    public void setUid(String uid) { this.uid = uid; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
@@ -28,6 +30,10 @@ public class User {
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }
 
-    public String getPhotoUrl() { return photoUrl; }
-    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { this.isActive = active; }
+
+    public boolean isInspector() { return "INSPECTOR".equals(role); }
+    public boolean isManager()   { return "MANAGER".equals(role); }
+    public boolean isAdmin()     { return "ADMIN".equals(role); }
 }

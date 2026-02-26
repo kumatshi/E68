@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
-    // alias(libs.plugins.google.services) // временно отключаем
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -121,14 +121,12 @@ dependencies {
     implementation(libs.work.runtime)
     implementation(libs.work.runtime.ktx)
 
-    // Google Maps
-    implementation(libs.play.services.maps)
-    implementation(libs.play.services.location)
-    implementation(libs.maps.utils)
 
-    // Firebase (временно отключаем)
-    // implementation(platform(libs.firebase.bom))
-    // implementation(libs.firebase.messaging)
+
+// Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 
     // Navigation
     implementation(libs.navigation.fragment)
@@ -174,4 +172,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Yandex MapKit
+    implementation("com.yandex.android:maps.mobile:4.6.1-full")
 }

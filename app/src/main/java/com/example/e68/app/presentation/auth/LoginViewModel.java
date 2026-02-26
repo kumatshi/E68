@@ -2,23 +2,23 @@ package com.example.e68.app.presentation.auth;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import com.example.e68.app.data.repository.AuthRepositoryImpl;
 import com.example.e68.app.domain.entity.User;
-import com.example.e68.app.domain.repository.UserRepository;
 import com.example.e68.app.presentation.common.BaseViewModel;
-import com.example.e68.app.util.Resource;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import javax.inject.Inject;
 
 @HiltViewModel
 public class LoginViewModel extends BaseViewModel {
 
-    private final UserRepository userRepository;
-    private final MutableLiveData<Boolean> _loginSuccess = new MutableLiveData<>(false);
-    public LiveData<Boolean> getLoginSuccess() { return _loginSuccess; }
+    private final AuthRepositoryImpl authRepository;
+
+    private final MutableLiveData<User> _loginSuccess = new MutableLiveData<>();
+    public LiveData<User> getLoginSuccess() { return _loginSuccess; }
 
     @Inject
-    public LoginViewModel(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public LoginViewModel(AuthRepositoryImpl authRepository) {
+        this.authRepository = authRepository;
     }
 
     public void login(String email, String password) {
@@ -26,16 +26,17 @@ public class LoginViewModel extends BaseViewModel {
             showError("Заполните все поля");
             return;
         }
-
         setLoading(true);
-
-        userRepository.login(email, password).observeForever(resource -> {
-            setLoading(false);
-
-            if (resource.status == Resource.Status.SUCCESS) {
-                _loginSuccess.postValue(true);
-            } else if (resource.status == Resource.Status.ERROR) {
-                showError(resource.message);
+        authRepository.login(email, password, new AuthRepositoryImpl.OnLoginCallback() {
+            @Override
+            public void onSuccess(User user) {
+                setLoading(false);
+                _loginSuccess.postValue(user);
+            }
+            @Override
+            public void onError(String message) {
+                setLoading(false);
+                showError(message);
             }
         });
     }
