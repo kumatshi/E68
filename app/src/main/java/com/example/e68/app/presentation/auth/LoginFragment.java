@@ -1,5 +1,3 @@
-// FILE: app/src/main/java/com/example/e68/app/presentation/auth/LoginFragment.java
-// ЗАМЕНИ ПОЛНОСТЬЮ
 package com.example.e68.app.presentation.auth;
 
 import android.os.Bundle;
@@ -14,12 +12,18 @@ import androidx.navigation.Navigation;
 
 import com.example.e68.app.R;
 import com.example.e68.app.databinding.FragmentLoginBinding;
-import com.example.e68.app.domain.entity.User;
 import com.example.e68.app.presentation.MainActivity;
 import com.example.e68.app.presentation.common.BaseFragment;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
+/**
+ * LoginFragment — исправлен.
+ *
+ * Ключевое: перед navigate() вызываем applyRoleMenu()
+ * → нижняя панель показывает правильные вкладки ДО перехода.
+ * Без этого вкладки менеджера/админа крашат приложение.
+ */
 @AndroidEntryPoint
 public class LoginFragment extends BaseFragment<FragmentLoginBinding> {
 
@@ -60,31 +64,24 @@ public class LoginFragment extends BaseFragment<FragmentLoginBinding> {
         viewModel.getLoginSuccess().observe(getViewLifecycleOwner(), user -> {
             if (user == null) return;
 
-            // 1. Переключаем меню нижней панели под роль пользователя
-            if (requireActivity() instanceof MainActivity) {
-                ((MainActivity) requireActivity()).applyRoleMenu(user.getRole());
-            }
+            // ★ Сначала применяем меню, потом навигируем — это обязательно
+            MainActivity activity = (MainActivity) requireActivity();
 
-            // 2. Навигация на нужный корневой экран
-            navigateByRole(user);
-        });
-    }
-
-    private void navigateByRole(User user) {
-        try {
-            if (user.isManager()) {
-                Navigation.findNavController(requireView())
-                        .navigate(R.id.action_loginFragment_to_managerFragment);
-            } else if (user.isAdmin()) {
-                Navigation.findNavController(requireView())
-                        .navigate(R.id.action_loginFragment_to_adminFragment);
-            } else {
-                // INSPECTOR — на карту
+            if (user.isInspector()) {
+                activity.applyRoleMenu("INSPECTOR");
                 Navigation.findNavController(requireView())
                         .navigate(R.id.action_loginFragment_to_mainFragment);
+
+            } else if (user.isManager()) {
+                activity.applyRoleMenu("MANAGER");
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_loginFragment_to_managerFragment);
+
+            } else if (user.isAdmin()) {
+                activity.applyRoleMenu("ADMIN");
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_loginFragment_to_adminFragment);
             }
-        } catch (Exception e) {
-            showToast("Ошибка навигации: " + e.getMessage());
-        }
+        });
     }
 }

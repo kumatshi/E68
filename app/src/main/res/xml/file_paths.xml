@@ -24,4 +24,8 @@
     <files-path
         name="files"
         path="." />
+
+    <external-files-path
+        name="photos"
+        path="Photos/" />
 </paths>

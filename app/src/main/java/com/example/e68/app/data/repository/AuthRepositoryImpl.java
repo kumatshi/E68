@@ -1,7 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════
-// ФАЙЛ: app/src/main/java/com/example/e68/app/data/repository/AuthRepositoryImpl.java
-// ЗАМЕНИ ПОЛНОСТЬЮ существующий файл
-// ═══════════════════════════════════════════════════════════════════
 package com.example.e68.app.data.repository;
 
 import android.util.Log;
@@ -11,7 +7,6 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.e68.app.domain.entity.User;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -54,19 +49,21 @@ public class AuthRepositoryImpl {
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(doc -> {
                     if (doc.exists()) {
-                        Log.d(TAG, "Firestore doc found: " + doc.getData());
+                        Map<String, Object> data = doc.getData();
+                        Log.d(TAG, "Firestore doc found: " + data);
 
-                        // ── Безопасное чтение полей вручную ──────────────────────
-                        // (избегаем проблемы с boolean isActive/active)
+                        // Читаем с trim ключей — на случай если в Firestore
+                        // поля сохранены с пробелами ("name   " вместо "name")
                         User user = new User();
                         user.setUid(uid);
-                        user.setName(getStr(doc.getData(), "name"));
-                        user.setEmail(getStr(doc.getData(), "email"));
-                        user.setRole(getStr(doc.getData(), "role"));
-                        user.setDepartment(getStr(doc.getData(), "department"));
+                        user.setName(getStrTrimKey(data, "name"));
+                        user.setEmail(getStrTrimKey(data, "email"));
+                        user.setRole(getStrTrimKey(data, "role"));
+                        user.setDepartment(getStrTrimKey(data, "department"));
 
-                        Object activeVal = doc.getData().get("isActive");
-                        if (activeVal == null) activeVal = doc.getData().get("active");
+                        // isActive может быть "isActive" или "active"
+                        Object activeVal = getValueTrimKey(data, "isActive");
+                        if (activeVal == null) activeVal = getValueTrimKey(data, "active");
                         user.setActive(Boolean.TRUE.equals(activeVal));
 
                         Log.d(TAG, "User loaded: name=" + user.getName()
@@ -82,7 +79,6 @@ public class AuthRepositoryImpl {
                         callback.onSuccess(user);
 
                     } else {
-                        // ── Документ не существует — создаём с дефолтной ролью INSPECTOR
                         Log.w(TAG, "Документ users/" + uid + " не найден. Создаём...");
                         createDefaultUser(uid, email, callback);
                     }
@@ -93,10 +89,6 @@ public class AuthRepositoryImpl {
                 });
     }
 
-    /**
-     * Создаёт документ в Firestore с ролью INSPECTOR.
-     * Вызывается когда пользователь уже есть в Firebase Auth, но нет в Firestore.
-     */
     private void createDefaultUser(String uid, String email, OnLoginCallback callback) {
         Map<String, Object> data = new HashMap<>();
         data.put("uid",        uid);
@@ -123,7 +115,6 @@ public class AuthRepositoryImpl {
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Не удалось создать документ: " + e.getMessage());
-                    // Всё равно пускаем — просто без роли из Firestore
                     User user = new User();
                     user.setUid(uid);
                     user.setEmail(email);
@@ -144,10 +135,27 @@ public class AuthRepositoryImpl {
     }
 
     // ── Хелперы ──────────────────────────────────────────────────────
-    private String getStr(Map<String, Object> map, String key) {
-        if (map == null) return "";
-        Object val = map.get(key);
-        return val != null ? val.toString() : "";
+
+    /**
+     * Ищет значение в Map по ключу с учётом пробелов.
+     * Сначала точное совпадение, потом поиск по trim всех ключей.
+     */
+    private Object getValueTrimKey(Map<String, Object> map, String key) {
+        if (map == null || key == null) return null;
+        // Точное совпадение
+        if (map.containsKey(key)) return map.get(key);
+        // Поиск с trim — на случай "name   " в Firestore
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (key.equals(entry.getKey().trim())) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    private String getStrTrimKey(Map<String, Object> map, String key) {
+        Object val = getValueTrimKey(map, key);
+        return val != null ? val.toString().trim() : "";
     }
 
     private String extractNameFromEmail(String email) {

@@ -1,8 +1,12 @@
 package com.example.e68.app.domain.entity;
 
+import com.google.firebase.firestore.IgnoreExtraProperties;
+
+@IgnoreExtraProperties
 public class Defect {
 
-    private long id;
+    private long   id;
+    private String localUuid;   // Firestore document ID
     private String title;
     private String description;
     private String type;
@@ -12,62 +16,63 @@ public class Defect {
     private double latitude;
     private double longitude;
     private String photoPath;
-    private long createdAt;
+    private long   createdAt;
     private String createdBy;
 
-    public Defect() {
-    }
+    public Defect() {}
 
-    // Геттеры и сеттеры
-    public long getId() { return id; }
-    public void setId(long id) { this.id = id; }
+    public long   getId()                    { return id; }
+    public void   setId(long id)             { this.id = id; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public String getLocalUuid()             { return localUuid; }
+    public void   setLocalUuid(String v)     { this.localUuid = v; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getTitle()                 { return title; }
+    public void   setTitle(String v)         { this.title = v; }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public String getDescription()           { return description; }
+    public void   setDescription(String v)   { this.description = v; }
 
-    public String getSeverity() { return severity; }
-    public void setSeverity(String severity) { this.severity = severity; }
+    public String getType()                  { return type; }
+    public void   setType(String v)          { this.type = v; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getSeverity()              { return severity; }
+    public void   setSeverity(String v)      { this.severity = v; }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public String getStatus()                { return status; }
+    public void   setStatus(String v)        { this.status = v; }
 
-    public double getLatitude() { return latitude; }
-    public void setLatitude(double latitude) { this.latitude = latitude; }
+    public String getAddress()               { return address; }
+    public void   setAddress(String v)       { this.address = v; }
 
-    public double getLongitude() { return longitude; }
-    public void setLongitude(double longitude) { this.longitude = longitude; }
+    public double getLatitude()              { return latitude; }
+    public void   setLatitude(double v)      { this.latitude = v; }
 
-    public String getPhotoPath() { return photoPath; }
-    public void setPhotoPath(String photoPath) { this.photoPath = photoPath; }
+    public double getLongitude()             { return longitude; }
+    public void   setLongitude(double v)     { this.longitude = v; }
 
-    public long getCreatedAt() { return createdAt; }
-    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+    public String getPhotoPath()             { return photoPath; }
+    public void   setPhotoPath(String v)     { this.photoPath = v; }
 
-    public String getCreatedBy() { return createdBy; }
-    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
+    public long   getCreatedAt()             { return createdAt; }
+    public void   setCreatedAt(long v)       { this.createdAt = v; }
 
-    // Вспомогательные методы
+    public String getCreatedBy()             { return createdBy; }
+    public void   setCreatedBy(String v)     { this.createdBy = v; }
+
     public String getFormattedDate() {
         return new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm")
                 .format(new java.util.Date(createdAt));
     }
 
     public int getStatusColor() {
+        if (status == null) return android.graphics.Color.parseColor("#000000");
         switch (status) {
-            case "OPEN": return android.graphics.Color.parseColor("#F44336"); // Красный
-            case "IN_PROGRESS": return android.graphics.Color.parseColor("#FF9800"); // Оранжевый
-            case "RESOLVED": return android.graphics.Color.parseColor("#4CAF50"); // Зеленый
-            case "REJECTED": return android.graphics.Color.parseColor("#9E9E9E"); // Серый
-            default: return android.graphics.Color.parseColor("#000000");
+            case "OPEN":        return android.graphics.Color.parseColor("#F44336");
+            case "IN_PROGRESS": return android.graphics.Color.parseColor("#FF9800");
+            case "RESOLVED":    return android.graphics.Color.parseColor("#4CAF50");
+            case "REJECTED":    return android.graphics.Color.parseColor("#9E9E9E");
+            default:            return android.graphics.Color.parseColor("#000000");
         }
     }
 }

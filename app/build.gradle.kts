@@ -175,4 +175,7 @@ dependencies {
 
     // Yandex MapKit
     implementation("com.yandex.android:maps.mobile:4.6.1-full")
+
+    // GPS (FusedLocationProvider)
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 }

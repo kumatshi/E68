@@ -2,158 +2,255 @@ package com.example.e68.app.data.repository;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
 import com.example.e68.app.domain.entity.Defect;
 import com.example.e68.app.domain.repository.DefectRepository;
 import com.example.e68.app.util.Resource;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * DefectRepositoryImpl — реальная реализация через Firestore.
+ *
+ * Коллекция: /defects
+ * Документ: {
+ *   uid, title, description, type, severity, status,
+ *   address, latitude, longitude, createdBy, createdAt, updatedAt
+ * }
+ *
+ * Использует snapshot listener → LiveData обновляется в реальном времени.
+ */
 @Singleton
 public class DefectRepositoryImpl implements DefectRepository {
 
-    private final MutableLiveData<List<Defect>> allDefects = new MutableLiveData<>(new ArrayList<>());
-    private final MutableLiveData<Defect> currentDefect = new MutableLiveData<>();
+    private static final String COL = "defects";
+
+    private final FirebaseFirestore db;
+    private final FirebaseAuth auth;
+
+    private final MutableLiveData<List<Defect>> _allDefects = new MutableLiveData<>(new ArrayList<>());
+    private ListenerRegistration listenerReg;
 
     @Inject
-    public DefectRepositoryImpl() {
-        // Добавим тестовые данные
-        addTestData();
+    public DefectRepositoryImpl(FirebaseFirestore db, FirebaseAuth auth) {
+        this.db = db;
+        this.auth = auth;
+        startRealtimeListener();
     }
 
-    private void addTestData() {
-        List<Defect> defects = new ArrayList<>();
+    // ─────────────────────────────────────────────
+    // REALTIME LISTENER
+    // ─────────────────────────────────────────────
 
-        Defect defect1 = new Defect();
-        defect1.setId(1);
-        defect1.setTitle("Выбоина на дороге");
-        defect1.setDescription("Глубокая выбоина на проезжей части");
-        defect1.setType("PH_001");
-        defect1.setSeverity("HIGH");
-        defect1.setStatus("OPEN");
-        defect1.setAddress("ул. Ленина, 10");
-        defect1.setLatitude(55.7558);
-        defect1.setLongitude(37.6173);
-        defect1.setCreatedAt(System.currentTimeMillis() - 86400000);
-        defect1.setCreatedBy("Иванов И.И.");
-        defects.add(defect1);
-
-        Defect defect2 = new Defect();
-        defect2.setId(2);
-        defect2.setTitle("Поврежденный люк");
-        defect2.setDescription("Люк открыт, требует ремонта");
-        defect2.setType("MK_001");
-        defect2.setSeverity("CRITICAL");
-        defect2.setStatus("IN_PROGRESS");
-        defect2.setAddress("ул. Пушкина, 5");
-        defect2.setLatitude(55.7658);
-        defect2.setLongitude(37.6273);
-        defect2.setCreatedAt(System.currentTimeMillis() - 172800000);
-        defect2.setCreatedBy("Петров П.П.");
-        defects.add(defect2);
-
-        allDefects.postValue(defects);
+    private void startRealtimeListener() {
+        listenerReg = db.collection(COL)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null || snapshots == null) return;
+                    List<Defect> list = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        Defect d = docToDefect(doc);
+                        if (d != null) list.add(d);
+                    }
+                    _allDefects.postValue(list);
+                });
     }
+
+    // ─────────────────────────────────────────────
+    // READ
+    // ─────────────────────────────────────────────
 
     @Override
     public LiveData<List<Defect>> getAllDefects() {
-        return allDefects;
+        return _allDefects;
     }
 
     @Override
     public LiveData<Defect> getDefectById(long id) {
         MutableLiveData<Defect> result = new MutableLiveData<>();
-        List<Defect> defects = allDefects.getValue();
-        if (defects != null) {
-            for (Defect defect : defects) {
-                if (defect.getId() == id) {
-                    result.postValue(defect);
-                    break;
-                }
+        // id у нас = hashCode документа, поэтому ищем в кэше
+        List<Defect> all = _allDefects.getValue();
+        if (all != null) {
+            for (Defect d : all) {
+                if (d.getId() == id) { result.setValue(d); return result; }
             }
         }
+        // Если нет в кэше — ищем по localUuid (хранится в tag)
+        result.setValue(null);
         return result;
     }
 
-    @Override
-    public LiveData<Resource<Defect>> createDefect(Defect defect) {
-        MutableLiveData<Resource<Defect>> result = new MutableLiveData<>();
-        result.setValue(Resource.loading());
-
-        new android.os.Handler().postDelayed(() -> {
-            List<Defect> defects = allDefects.getValue();
-            if (defects == null) {
-                defects = new ArrayList<>();
-            }
-
-            long newId = defects.size() + 1;
-            defect.setId(newId);
-            defect.setCreatedAt(System.currentTimeMillis());
-            defect.setStatus("OPEN");
-
-            defects.add(defect);
-            allDefects.postValue(defects);
-
-            result.postValue(Resource.success(defect));
-        }, 1000);
-
-        return result;
-    }
-
-    @Override
-    public LiveData<Resource<Defect>> updateDefect(Defect defect) {
-        MutableLiveData<Resource<Defect>> result = new MutableLiveData<>();
-        result.setValue(Resource.loading());
-
-        List<Defect> defects = allDefects.getValue();
-        if (defects != null) {
-            for (int i = 0; i < defects.size(); i++) {
-                if (defects.get(i).getId() == defect.getId()) {
-                    defects.set(i, defect);
-                    break;
-                }
-            }
-            allDefects.postValue(defects);
-        }
-
-        result.postValue(Resource.success(defect));
-        return result;
-    }
-
-    @Override
-    public LiveData<Resource<Void>> deleteDefect(long id) {
-        MutableLiveData<Resource<Void>> result = new MutableLiveData<>();
-
-        List<Defect> defects = allDefects.getValue();
-        if (defects != null) {
-            defects.removeIf(defect -> defect.getId() == id);
-            allDefects.postValue(defects);
-        }
-
-        result.postValue(Resource.success(null));
+    public LiveData<Defect> getDefectByFirestoreId(String firestoreId) {
+        MutableLiveData<Defect> result = new MutableLiveData<>();
+        db.collection(COL).document(firestoreId).get()
+                .addOnSuccessListener(doc -> result.postValue(docToDefect(doc)))
+                .addOnFailureListener(e -> result.postValue(null));
         return result;
     }
 
     @Override
     public LiveData<List<Defect>> getDefectsByStatus(String status) {
         MutableLiveData<List<Defect>> result = new MutableLiveData<>();
+        List<Defect> all = _allDefects.getValue();
         List<Defect> filtered = new ArrayList<>();
-
-        List<Defect> defects = allDefects.getValue();
-        if (defects != null) {
-            for (Defect defect : defects) {
-                if (defect.getStatus().equals(status)) {
-                    filtered.add(defect);
-                }
+        if (all != null) {
+            for (Defect d : all) {
+                if (status.equals(d.getStatus())) filtered.add(d);
             }
         }
-        result.postValue(filtered);
+        result.setValue(filtered);
         return result;
     }
 
+    // ─────────────────────────────────────────────
+    // CREATE
+    // ─────────────────────────────────────────────
+
+    @Override
+    public LiveData<Resource<Defect>> createDefect(Defect defect) {
+        MutableLiveData<Resource<Defect>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading());
+
+        String currentUid = auth.getCurrentUser() != null
+                ? auth.getCurrentUser().getUid() : "unknown";
+        String currentEmail = auth.getCurrentUser() != null
+                ? auth.getCurrentUser().getEmail() : "unknown";
+
+        defect.setStatus("OPEN");
+        defect.setCreatedAt(System.currentTimeMillis());
+        defect.setCreatedBy(currentEmail);
+
+        Map<String, Object> data = defectToMap(defect);
+        data.put("inspectorUid", currentUid);
+
+        db.collection(COL).add(data)
+                .addOnSuccessListener(ref -> {
+                    defect.setId(ref.getId().hashCode());
+                    defect.setLocalUuid(ref.getId());
+                    result.postValue(Resource.success(defect));
+                })
+                .addOnFailureListener(e ->
+                        result.postValue(Resource.error(e.getMessage(), null)));
+
+        return result;
+    }
+
+    // ─────────────────────────────────────────────
+    // UPDATE
+    // ─────────────────────────────────────────────
+
+    @Override
+    public LiveData<Resource<Defect>> updateDefect(Defect defect) {
+        MutableLiveData<Resource<Defect>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading());
+
+        if (defect.getLocalUuid() == null) {
+            result.setValue(Resource.error("Нет Firestore ID", null));
+            return result;
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("status", defect.getStatus());
+        updates.put("description", defect.getDescription());
+        updates.put("severity", defect.getSeverity());
+        updates.put("updatedAt", System.currentTimeMillis());
+
+        db.collection(COL).document(defect.getLocalUuid())
+                .update(updates)
+                .addOnSuccessListener(v -> result.postValue(Resource.success(defect)))
+                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
+
+        return result;
+    }
+
+    // ─────────────────────────────────────────────
+    // DELETE
+    // ─────────────────────────────────────────────
+
+    @Override
+    public LiveData<Resource<Void>> deleteDefect(long id) {
+        MutableLiveData<Resource<Void>> result = new MutableLiveData<>();
+
+        // Находим localUuid по id
+        List<Defect> all = _allDefects.getValue();
+        String firestoreId = null;
+        if (all != null) {
+            for (Defect d : all) {
+                if (d.getId() == id) { firestoreId = d.getLocalUuid(); break; }
+            }
+        }
+
+        if (firestoreId == null) {
+            result.setValue(Resource.error("Дефект не найден", null));
+            return result;
+        }
+
+        db.collection(COL).document(firestoreId).delete()
+                .addOnSuccessListener(v -> result.postValue(Resource.success(null)))
+                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
+
+        return result;
+    }
+
+    // ─────────────────────────────────────────────
+    // OFFLINE STUB
+    // ─────────────────────────────────────────────
+
     @Override
     public List<Defect> getUnsyncedDefects() {
-        return new ArrayList<>(); // Для офлайн режима
+        return new ArrayList<>();
+    }
+
+    // ─────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────
+
+    private Defect docToDefect(DocumentSnapshot doc) {
+        if (doc == null || !doc.exists()) return null;
+        Defect d = new Defect();
+        d.setId(doc.getId().hashCode());
+        d.setLocalUuid(doc.getId());
+        d.setTitle(doc.getString("title"));
+        d.setDescription(doc.getString("description"));
+        d.setType(doc.getString("type"));
+        d.setSeverity(doc.getString("severity"));
+        d.setStatus(doc.getString("status"));
+        d.setAddress(doc.getString("address"));
+        Double lat = doc.getDouble("latitude");
+        Double lng = doc.getDouble("longitude");
+        if (lat != null) d.setLatitude(lat);
+        if (lng != null) d.setLongitude(lng);
+        d.setCreatedBy(doc.getString("createdBy"));
+        Long createdAt = doc.getLong("createdAt");
+        if (createdAt != null) d.setCreatedAt(createdAt);
+        return d;
+    }
+
+    private Map<String, Object> defectToMap(Defect d) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("title",       d.getTitle());
+        m.put("description", d.getDescription());
+        m.put("type",        d.getType());
+        m.put("severity",    d.getSeverity());
+        m.put("status",      d.getStatus());
+        m.put("address",     d.getAddress());
+        m.put("latitude",    d.getLatitude());
+        m.put("longitude",   d.getLongitude());
+        m.put("createdBy",   d.getCreatedBy());
+        m.put("createdAt",   d.getCreatedAt());
+        m.put("updatedAt",   d.getCreatedAt());
+        return m;
     }
 }
