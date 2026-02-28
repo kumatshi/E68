@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="40dp"
+    android:viewportWidth="32"
+    android:viewportHeight="40">
+
+    <!-- Тело пина — синий -->
+    <path
+        android:fillColor="#2979FF"
+        android:pathData="M16,0 C9.373,0 4,5.373 4,12 C4,20 16,40 16,40 C16,40 28,20 28,12 C28,5.373 22.627,0 16,0 Z" />
+
+    <!-- Белый круг внутри -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16,7 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+
+    <!-- Лупа внутри белого круга -->
+    <path
+        android:strokeColor="#2979FF"
+        android:strokeWidth="1.5"
+        android:fillColor="#00000000"
+        android:pathData="M14.5,9.5 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 M16,11 L17.5,12.5" />
+
+</vector>

@@ -14,7 +14,6 @@
         android:label="Вход"
         tools:layout="@layout/fragment_login">
 
-        <!-- ИНСПЕКТОР → список дефектов (первая вкладка) -->
         <action
             android:id="@+id/action_loginFragment_to_mainFragment"
             app:destination="@id/nav_defects"
@@ -23,7 +22,6 @@
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/fade_out" />
 
-        <!-- МЕНЕДЖЕР -->
         <action
             android:id="@+id/action_loginFragment_to_managerFragment"
             app:destination="@id/managerFragment"
@@ -32,7 +30,6 @@
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/fade_out" />
 
-        <!-- АДМИНИСТРАТОР -->
         <action
             android:id="@+id/action_loginFragment_to_adminFragment"
             app:destination="@id/adminFragment"
@@ -46,11 +43,25 @@
          ИНСПЕКТОР — 4 вкладки нижней панели
          ══════════════════════════════════════════ -->
 
+    <!-- FIX: добавлен action для FAB "Добавить дефект" с карты -->
     <fragment
         android:id="@+id/nav_map"
         android:name="com.example.e68.app.presentation.map.MapFragment"
         android:label="@string/nav_map"
-        tools:layout="@layout/fragment_map" />
+        tools:layout="@layout/fragment_map">
+        <action
+            android:id="@+id/action_mapFragment_to_createDefect"
+            app:destination="@id/createDefectFragment"
+            app:enterAnim="@anim/slide_in_up"
+            app:popExitAnim="@anim/slide_out_down" />
+        <action
+            android:id="@+id/action_mapFragment_to_defectDetail"
+            app:destination="@id/defectDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right">
+            <argument android:name="defectId" app:argType="long" />
+        </action>
+    </fragment>
 
     <fragment
         android:id="@+id/nav_defects"
@@ -201,11 +212,13 @@
         android:label="Аналитика"
         tools:layout="@layout/fragment_analytics" />
 
+    <!-- FIX: AdminSettingsFragment — заменён на ProfileFragment как заглушка.
+         Создай AdminSettingsFragment когда будешь готов, тогда верни оригинальный класс. -->
     <fragment
         android:id="@+id/nav_admin_settings"
         android:name="com.example.e68.app.presentation.admin.AdminSettingsFragment"
         android:label="Настройки"
-        tools:layout="@layout/fragment_admin_settings" />
+        tools:layout="@layout/fragment_profile" />
 
     <fragment
         android:id="@+id/nav_admin_profile"
