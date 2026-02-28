@@ -4,7 +4,9 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.e68.app.R;
+import com.example.e68.app.data.remote.geocoder.GeocoderResponse;
 import com.example.e68.app.databinding.FragmentCreateDefectBinding;
 import com.example.e68.app.domain.entity.Defect;
 import com.example.e68.app.presentation.common.BaseFragment;
@@ -77,7 +80,6 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
                 else showToast("Разрешение на камеру отклонено");
             });
 
-    // Результат съёмки — TakePicture возвращает true если фото сделано успешно
     private final ActivityResultLauncher<Uri> cameraLauncher =
             registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
                 if (Boolean.TRUE.equals(success) && cameraFileUri != null) {
@@ -88,7 +90,6 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
                 }
             });
 
-    // Результат выбора из галереи
     private final ActivityResultLauncher<String> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
@@ -115,6 +116,7 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
         setupDefectTypeChips();
         setupSeverityChips();
         setupGpsButton();
+        setupAddressGeocoder(); // ← новое
         setupPhotoButtons();
         setupSubmitButton();
         observeViewModel();
@@ -173,8 +175,24 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
         });
     }
 
+    // ── Яндекс Геокодер ───────────────────────────────────────────
+
+    private void setupAddressGeocoder() {
+        // Сбрасываем ошибку и координаты когда пользователь редактирует адрес вручную
+        binding.etAddress.addTextChangedListener(addressWatcher);
+
+        // Кнопка прямого геокодинга: введённый адрес → координаты
+        binding.btnFindAddress.setOnClickListener(v -> {
+            String address = binding.etAddress.getText().toString().trim();
+            if (TextUtils.isEmpty(address)) {
+                binding.tilAddress.setError("Введите адрес для поиска");
+                return;
+            }
+            viewModel.geocodeAddress(address);
+        });
+    }
+
     private void setupPhotoButtons() {
-        // "Сфотографировать" — запрашивает разрешение камеры если нет, потом открывает камеру
         binding.btnTakePhoto.setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(requireContext(),
                     Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
@@ -184,11 +202,9 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
             }
         });
 
-        // "Из галереи" — открывает системный выбор файлов
         binding.btnPickPhoto.setOnClickListener(v ->
                 galleryLauncher.launch("image/*"));
 
-        // "Удалить" — очищает превью
         binding.btnRemovePhoto.setOnClickListener(v -> {
             photoUri = null;
             cameraFileUri = null;
@@ -217,9 +233,9 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
                         if (location != null) {
                             pickedLat = location.getLatitude();
                             pickedLng = location.getLongitude();
-                            binding.tvGpsCoords.setText(
-                                    String.format("%.5f, %.5f", pickedLat, pickedLng));
-                            binding.tvGpsCoords.setVisibility(View.VISIBLE);
+                            updateCoordinatesUI();
+                            // ← После GPS автоматически заполняем поле адреса
+                            viewModel.reverseGeocode(pickedLat, pickedLng);
                         } else {
                             showToast("Не удалось получить координаты");
                         }
@@ -285,13 +301,24 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
             ok = false;
         }
 
+        // ── Обновлённая валидация адреса ────────────────────────────
         String address = binding.etAddress.getText().toString().trim();
-        if (pickedLat == 0 && pickedLng == 0 && TextUtils.isEmpty(address)) {
+        boolean hasCoords  = pickedLat != 0 || pickedLng != 0;
+        boolean hasAddress = !TextUtils.isEmpty(address);
+
+        if (!hasCoords && !hasAddress) {
+            // Совсем ничего нет
             binding.tilAddress.setError("Укажите адрес или определите GPS");
+            ok = false;
+        } else if (hasAddress && !hasCoords) {
+            // Текст есть, но координаты не подтверждены — запускаем геокодер
+            binding.tilAddress.setError("Нажмите «Найти» чтобы проверить адрес");
+            viewModel.geocodeAddress(address);
             ok = false;
         } else {
             binding.tilAddress.setError(null);
         }
+        // ────────────────────────────────────────────────────────────
 
         return ok;
     }
@@ -329,5 +356,83 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
                 showToast("Ошибка: " + result.message);
             }
         });
+
+        // ── Прямой геокодинг: адрес → координаты ────────────────────
+        viewModel.getGeocodeResult().observe(getViewLifecycleOwner(), response -> {
+            if (response == null) {
+                binding.tilAddress.setError("Адрес не найден, проверьте написание");
+                return;
+            }
+            GeocoderResponse.Point point = response.getFirstPoint();
+            if (point == null) {
+                binding.tilAddress.setError("Не удалось определить координаты");
+                return;
+            }
+            pickedLat = point.getLatitude();
+            pickedLng = point.getLongitude();
+
+            // Заменяем поле адреса форматированным ответом от Яндекса
+            String formatted = response.getFirstAddress();
+            if (formatted != null) {
+                // Снимаем watcher чтобы setText не сбросил pickedLat/pickedLng
+                binding.etAddress.removeTextChangedListener(addressWatcher);
+                binding.etAddress.setText(formatted);
+                binding.etAddress.setSelection(formatted.length());
+                binding.etAddress.addTextChangedListener(addressWatcher);
+            }
+
+            binding.tilAddress.setError(null);
+            updateCoordinatesUI();
+            showToast("Адрес подтверждён ✓");
+        });
+
+        // ── Обратный геокодинг: GPS → адрес ─────────────────────────
+        viewModel.getReverseGeocodeResult().observe(getViewLifecycleOwner(), response -> {
+            if (response == null) {
+                // Координаты уже есть из fetchGps(), просто адрес не определился
+                showToast("Координаты получены, адрес не определён");
+                return;
+            }
+            String address = response.getFirstAddress();
+            if (address != null) {
+                // Снимаем watcher чтобы setText не сбросил координаты
+                binding.etAddress.removeTextChangedListener(addressWatcher);
+                binding.etAddress.setText(address);
+                binding.etAddress.setSelection(address.length());
+                binding.etAddress.addTextChangedListener(addressWatcher);
+                binding.tilAddress.setError(null);
+            }
+            showToast("Адрес определён по GPS ✓");
+        });
+
+        // ── Прогресс геокодера ───────────────────────────────────────
+        viewModel.isGeocodingLoading().observe(getViewLifecycleOwner(), loading -> {
+            binding.progressGeocoder.setVisibility(loading ? View.VISIBLE : View.GONE);
+            binding.btnFindAddress.setEnabled(!loading);
+        });
+    }
+
+    // ── Вспомогательные ──────────────────────────────────────────
+
+    /**
+     * TextWatcher в поле класса — чтобы можно было снимать/добавлять его
+     * при программном setText из геокодера (иначе он сбросит координаты).
+     */
+    private final TextWatcher addressWatcher = new TextWatcher() {
+        @Override public void beforeTextChanged(CharSequence s, int i, int c, int a) {}
+        @Override public void onTextChanged(CharSequence s, int i, int b, int c) {
+            binding.tilAddress.setError(null);
+            // Пользователь сам редактирует → старые координаты больше не актуальны
+            pickedLat = 0;
+            pickedLng = 0;
+            binding.tvGpsCoords.setVisibility(View.GONE);
+        }
+        @Override public void afterTextChanged(Editable s) {}
+    };
+
+    /** Обновляет строку с координатами под кнопкой GPS */
+    private void updateCoordinatesUI() {
+        binding.tvGpsCoords.setText(String.format("📍 %.5f, %.5f", pickedLat, pickedLng));
+        binding.tvGpsCoords.setVisibility(View.VISIBLE);
     }
 }

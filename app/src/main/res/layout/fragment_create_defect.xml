@@ -173,6 +173,7 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="8dp" />
 
+            <!-- Кнопка GPS + координаты -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -203,6 +204,7 @@
 
             </LinearLayout>
 
+            <!-- Поле адреса -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilAddress"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -217,6 +219,35 @@
                     android:inputType="textCapWords"
                     android:imeOptions="actionDone" />
             </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- ↓↓↓ ГЕОКОДЕР: кнопка + спиннер (добавлено) ↓↓↓ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="4dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFindAddress"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Найти адрес"
+                    app:icon="@drawable/ic_location"
+                    app:iconPadding="6dp" />
+
+                <ProgressBar
+                    android:id="@+id/progressGeocoder"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="12dp"
+                    android:indeterminateTint="?attr/colorPrimary"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+            <!-- ↑↑↑ конец блока геокодера ↑↑↑ -->
 
             <!-- ФОТОГРАФИЯ -->
             <TextView
@@ -257,7 +288,7 @@
 
             </LinearLayout>
 
-            <!-- Превью фото — без strokeColor -->
+            <!-- Превью фото -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardPhotoPreview"
                 android:layout_width="match_parent"
