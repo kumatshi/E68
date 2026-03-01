@@ -75,6 +75,7 @@ android {
             excludes += "META-INF/*.properties"
             excludes += "META-INF/*.version"
             excludes += "META-INF/*.kotlin_module"
+            excludes += "META-INF/services/org.slf4j.spi.SLF4JServiceProvider"
 
             // Для iText
             pickFirsts += "META-INF/native-image/reflect-config.json"
@@ -150,8 +151,11 @@ dependencies {
     }
     implementation(libs.itext) {
         exclude(group = "org.apache.logging.log4j", module = "log4j-api")
-        exclude(group = "org.slf4j", module = "slf4j-api")
+
     }
+
+    implementation("org.slf4j:slf4j-api:1.7.36")
+    implementation("org.slf4j:slf4j-simple:1.7.36")
 
     // DataStore
     implementation(libs.datastore)

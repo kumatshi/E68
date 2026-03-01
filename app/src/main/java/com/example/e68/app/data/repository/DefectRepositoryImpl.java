@@ -16,22 +16,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-/**
- * DefectRepositoryImpl — реальная реализация через Firestore.
- *
- * Коллекция: /defects
- * Документ: {
- *   uid, title, description, type, severity, status,
- *   address, latitude, longitude, createdBy, createdAt, updatedAt
- * }
- *
- * Использует snapshot listener → LiveData обновляется в реальном времени.
- */
 @Singleton
 public class DefectRepositoryImpl implements DefectRepository {
 
@@ -80,14 +68,12 @@ public class DefectRepositoryImpl implements DefectRepository {
     @Override
     public LiveData<Defect> getDefectById(long id) {
         MutableLiveData<Defect> result = new MutableLiveData<>();
-        // id у нас = hashCode документа, поэтому ищем в кэше
         List<Defect> all = _allDefects.getValue();
         if (all != null) {
             for (Defect d : all) {
                 if (d.getId() == id) { result.setValue(d); return result; }
             }
         }
-        // Если нет в кэше — ищем по localUuid (хранится в tag)
         result.setValue(null);
         return result;
     }
@@ -132,6 +118,8 @@ public class DefectRepositoryImpl implements DefectRepository {
         defect.setCreatedAt(System.currentTimeMillis());
         defect.setCreatedBy(currentEmail);
 
+        // photoPath сохраняем как есть (content:// URI)
+        // Фото видно только на том устройстве где снято — это нормально
         Map<String, Object> data = defectToMap(defect);
         data.put("inspectorUid", currentUid);
 
@@ -162,10 +150,10 @@ public class DefectRepositoryImpl implements DefectRepository {
         }
 
         Map<String, Object> updates = new HashMap<>();
-        updates.put("status", defect.getStatus());
+        updates.put("status",      defect.getStatus());
         updates.put("description", defect.getDescription());
-        updates.put("severity", defect.getSeverity());
-        updates.put("updatedAt", System.currentTimeMillis());
+        updates.put("severity",    defect.getSeverity());
+        updates.put("updatedAt",   System.currentTimeMillis());
 
         db.collection(COL).document(defect.getLocalUuid())
                 .update(updates)
@@ -183,7 +171,6 @@ public class DefectRepositoryImpl implements DefectRepository {
     public LiveData<Resource<Void>> deleteDefect(long id) {
         MutableLiveData<Resource<Void>> result = new MutableLiveData<>();
 
-        // Находим localUuid по id
         List<Defect> all = _allDefects.getValue();
         String firestoreId = null;
         if (all != null) {
@@ -235,6 +222,8 @@ public class DefectRepositoryImpl implements DefectRepository {
         d.setCreatedBy(doc.getString("createdBy"));
         Long createdAt = doc.getLong("createdAt");
         if (createdAt != null) d.setCreatedAt(createdAt);
+        // ← читаем photoPath из Firestore
+        d.setPhotoPath(doc.getString("photoPath"));
         return d;
     }
 
@@ -251,6 +240,8 @@ public class DefectRepositoryImpl implements DefectRepository {
         m.put("createdBy",   d.getCreatedBy());
         m.put("createdAt",   d.getCreatedAt());
         m.put("updatedAt",   d.getCreatedAt());
+        // ← сохраняем photoPath (content:// URI строкой)
+        m.put("photoPath",   d.getPhotoPath());
         return m;
     }
 }

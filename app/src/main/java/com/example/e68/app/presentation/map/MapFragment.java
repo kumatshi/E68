@@ -107,7 +107,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
 
         setupMap();
         setupSearch();
-        setupFab();
         setupFilterChips();
         observeDefects();
         observeSelectedDefect();
@@ -135,7 +134,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
 
     private void setupMap() {
         binding.mapView.getMap().move(
-                new CameraPosition(new Point(55.7558, 37.6173), 10f, 0f, 0f));
+                new CameraPosition(new Point(51.7727, 55.0988), 12f, 0f, 0f));
 
         binding.mapView.getMap().addCameraListener(cameraListener);
         viewModel.setVisibleRegion(binding.mapView.getMap().getVisibleRegion());
@@ -218,11 +217,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
         });
     }
 
-    private void setupFab() {
-        binding.fabAddDefect.setOnClickListener(v ->
-                Navigation.findNavController(requireView())
-                        .navigate(R.id.action_mapFragment_to_createDefect));
-    }
 
     private void setupFilterChips() {
         binding.chipAll.setOnCheckedChangeListener((b, c)      -> { if (c) viewModel.setSeverityFilter(null); });

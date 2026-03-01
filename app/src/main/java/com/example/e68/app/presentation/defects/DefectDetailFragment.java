@@ -13,6 +13,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.example.e68.app.R;
 import com.example.e68.app.databinding.FragmentDefectDetailBinding;
 import com.example.e68.app.domain.entity.Defect;
 import com.example.e68.app.presentation.common.BaseFragment;
@@ -83,70 +86,101 @@ public class DefectDetailFragment extends BaseFragment<FragmentDefectDetailBindi
         binding.progressBar.setVisibility(View.GONE);
         binding.contentLayout.setVisibility(View.VISIBLE);
 
-        // Заголовок тулбара
         binding.toolbar.setTitle(d.getTitle() != null ? d.getTitle() : "Дефект");
 
-        // Основные поля
         binding.tvTitle.setText(d.getTitle());
         binding.tvDescription.setText(
                 d.getDescription() != null && !d.getDescription().isEmpty()
                         ? d.getDescription() : "Описание не указано");
 
-        // Тип
         binding.tvType.setText(getTypeLabel(d.getType()));
 
-        // Серьёзность
         binding.tvSeverity.setText(getSeverityLabel(d.getSeverity()));
         binding.tvSeverity.setTextColor(getSeverityColor(d.getSeverity()));
 
-        // Статус
         StatusHelper.applyStatus(binding.tvStatus, d.getStatus());
 
-        // Местоположение
         if (d.getAddress() != null && !d.getAddress().isEmpty()) {
             binding.tvAddress.setText(d.getAddress());
         } else if (d.getLatitude() != 0 || d.getLongitude() != 0) {
-            binding.tvAddress.setText(
-                    String.format(Locale.getDefault(), "%.5f, %.5f",
-                            d.getLatitude(), d.getLongitude()));
+            binding.tvAddress.setText(String.format(Locale.getDefault(),
+                    "%.5f, %.5f", d.getLatitude(), d.getLongitude()));
         } else {
             binding.tvAddress.setText("Адрес не указан");
         }
 
-        // GPS координаты
         if (d.getLatitude() != 0 || d.getLongitude() != 0) {
-            binding.tvCoords.setText(
-                    String.format(Locale.getDefault(), "%.5f° с.ш., %.5f° в.д.",
-                            d.getLatitude(), d.getLongitude()));
+            binding.tvCoords.setText(String.format(Locale.getDefault(),
+                    "%.5f° с.ш., %.5f° в.д.", d.getLatitude(), d.getLongitude()));
             binding.rowCoords.setVisibility(View.VISIBLE);
         } else {
             binding.rowCoords.setVisibility(View.GONE);
         }
 
-        // Автор и дата
         binding.tvCreatedBy.setText(d.getCreatedBy() != null ? d.getCreatedBy() : "—");
         binding.tvCreatedAt.setText(new SimpleDateFormat("dd MMMM yyyy, HH:mm",
                 new Locale("ru")).format(new Date(d.getCreatedAt())));
 
-        // ── ФОТО ─────────────────────────────────────────────
-        String photoPath = d.getPhotoPath();
-        if (photoPath != null && !photoPath.isEmpty()) {
-            try {
-                Uri photoUri = Uri.parse(photoPath);
-                binding.ivPhoto.setImageURI(photoUri);
-                binding.cardPhoto.setVisibility(View.VISIBLE);
-                binding.cardNoPhoto.setVisibility(View.GONE);
-            } catch (Exception e) {
-                binding.cardPhoto.setVisibility(View.GONE);
-                binding.cardNoPhoto.setVisibility(View.VISIBLE);
-            }
-        } else {
-            binding.cardPhoto.setVisibility(View.GONE);
-            binding.cardNoPhoto.setVisibility(View.VISIBLE);
+        loadPhoto(d.getPhotoPath());
+
+        binding.btnChangeStatus.setOnClickListener(v -> showStatusDialog(d));
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // ФОТО
+    // ═══════════════════════════════════════════════════════════
+
+    private void loadPhoto(@Nullable String photoPath) {
+        if (photoPath == null || photoPath.isEmpty()) {
+            showNoPhoto();
+            return;
         }
 
-        // Кнопка смены статуса
-        binding.btnChangeStatus.setOnClickListener(v -> showStatusDialog(d));
+        try {
+            Uri uri = Uri.parse(photoPath);
+            binding.cardPhoto.setVisibility(View.VISIBLE);
+            binding.cardNoPhoto.setVisibility(View.GONE);
+
+            Glide.with(requireContext())
+                    .load(uri)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .placeholder(R.drawable.ic_camera)
+                    .error(R.drawable.ic_camera)
+                    .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(
+                                @Nullable com.bumptech.glide.load.engine.GlideException e,
+                                Object model,
+                                com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
+                                boolean isFirstResource) {
+                            // URI недоступен — показываем заглушку
+                            showNoPhoto();
+                            return true;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(
+                                android.graphics.drawable.Drawable resource,
+                                Object model,
+                                com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
+                                com.bumptech.glide.load.DataSource dataSource,
+                                boolean isFirstResource) {
+                            // Фото загружено — карточка уже видна
+                            return false;
+                        }
+                    })
+                    .into(binding.ivPhoto);
+
+        } catch (Exception e) {
+            showNoPhoto();
+        }
+    }
+
+    private void showNoPhoto() {
+        if (getView() == null) return;
+        binding.cardPhoto.setVisibility(View.GONE);
+        binding.cardNoPhoto.setVisibility(View.VISIBLE);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -169,7 +203,6 @@ public class DefectDetailFragment extends BaseFragment<FragmentDefectDetailBindi
                 .setPositiveButton("Сохранить", (dialog, w) -> {
                     int selected = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
                     if (selected == current) return;
-
                     defect.setStatus(statuses[selected]);
                     viewModel.updateDefect(defect).observe(getViewLifecycleOwner(), result -> {
                         if (result == null) return;
