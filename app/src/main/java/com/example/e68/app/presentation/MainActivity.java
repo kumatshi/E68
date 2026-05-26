@@ -67,8 +67,13 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Проверяем и запрашиваем разрешения на запись в хранилище
-        checkAndRequestStoragePermissions();
+        // Получаем роль из SplashActivity
+        String role = getIntent().getStringExtra("USER_ROLE");
+        if (role != null && !role.isEmpty()) {
+            currentUserRole = role;
+            applyRoleMenu(role);
+            setStartDestinationBasedOnRole();
+        }
 
         setupNavController();
         observeCurrentUser();

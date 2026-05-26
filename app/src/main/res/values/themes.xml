@@ -110,4 +110,5 @@
         <item name="android:colorForeground">@color/text_hint</item>
     </style>
 
+
 </resources>

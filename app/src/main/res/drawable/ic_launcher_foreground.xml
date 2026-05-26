@@ -1,30 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    E68 App Icon — Foreground Layer (Adaptive Icon)
+    Place in: res/drawable/ic_launcher_foreground.xml
+
+    Canvas: 108dp × 108dp
+    Safe zone (always visible): 18dp–90dp on each axis
+    All key content is within this safe zone.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
+
+    <!-- ══════════════════════════════════════════
+         OUTER GLOW RINGS (concentric hexagons)
+         ══════════════════════════════════════════ -->
+
     <path
+        android:name="ring3"
+        android:pathData="M54,7 L89,27 L89,67 L54,87 L19,67 L19,27 Z"
+        android:fillColor="#00000000"
+        android:strokeColor="#FF8C42"
+        android:strokeWidth="0.8"
+        android:strokeAlpha="0.08"/>
+
+    <path
+        android:name="ring2"
+        android:pathData="M54,10 L87,29 L87,65 L54,84 L21,65 L21,29 Z"
+        android:fillColor="#00000000"
+        android:strokeColor="#FFB347"
+        android:strokeWidth="1.0"
+        android:strokeAlpha="0.14"/>
+
+    <path
+        android:name="ring1"
+        android:pathData="M54,13 L85,31 L85,63 L54,81 L23,63 L23,31 Z"
+        android:fillColor="#00000000"
+        android:strokeColor="#FFD166"
+        android:strokeWidth="1.2"
+        android:strokeAlpha="0.22"/>
+
+    <!-- ══════════════════════════════════════════
+         HEX OUTER GLOW (multi-layer stroke)
+         ══════════════════════════════════════════ -->
+
+    <path
+        android:pathData="M54,15 L83,33 L83,63 L54,81 L25,63 L25,33 Z"
+        android:fillColor="#00000000"
+        android:strokeColor="#FF6B35"
+        android:strokeWidth="6.0"
+        android:strokeAlpha="0.20"/>
+
+    <path
+        android:pathData="M54,15 L83,33 L83,63 L54,81 L25,63 L25,33 Z"
+        android:fillColor="#00000000"
+        android:strokeColor="#FF8C42"
+        android:strokeWidth="3.5"
+        android:strokeAlpha="0.32"/>
+
+    <!-- ══════════════════════════════════════════
+         HEXAGON FILL — dark navy
+         ══════════════════════════════════════════ -->
+
+    <path
+        android:pathData="M54,15 L83,33 L83,63 L54,81 L25,63 L25,33 Z"
+        android:fillColor="#1E293B"/>
+
+    <!-- Top gradient overlay (darker) -->
+    <path
+        android:pathData="M54,15 L83,33 L54,33 L25,33 Z"
+        android:fillColor="#0F172A"
+        android:fillAlpha="0.75"/>
+
+    <!-- ══════════════════════════════════════════
+         SKY — upper half of hex interior
+         ══════════════════════════════════════════ -->
+
+    <!-- Deep sky -->
+    <path
+        android:pathData="M54,15 L83,33 L83,52 L25,52 L25,33 Z"
+        android:fillColor="#0A1628"/>
+
+    <!-- Sky mid-tone -->
+    <path
+        android:pathData="M25,44 L83,44 L83,52 L25,52 Z"
+        android:fillColor="#1A2D4A"
+        android:fillAlpha="0.9"/>
+
+    <!-- ══════════════════════════════════════════
+         SKY STARS (tiny circles inside hex top)
+         ══════════════════════════════════════════ -->
+
+    <path android:pathData="M31,22 m-0.8,0 a0.8,0.8 0 1,0 1.6,0 a0.8,0.8 0 1,0 -1.6,0"
+        android:fillColor="#FFD166" android:fillAlpha="0.50"/>
+    <path android:pathData="M43,18 m-0.9,0 a0.9,0.9 0 1,0 1.8,0 a0.9,0.9 0 1,0 -1.8,0"
+        android:fillColor="#FFFFFF" android:fillAlpha="0.38"/>
+    <path android:pathData="M54,20 m-0.7,0 a0.7,0.7 0 1,0 1.4,0 a0.7,0.7 0 1,0 -1.4,0"
+        android:fillColor="#FFFFFF" android:fillAlpha="0.32"/>
+    <path android:pathData="M65,18 m-0.8,0 a0.8,0.8 0 1,0 1.6,0 a0.8,0.8 0 1,0 -1.6,0"
+        android:fillColor="#FFD166" android:fillAlpha="0.48"/>
+    <path android:pathData="M76,24 m-0.9,0 a0.9,0.9 0 1,0 1.8,0 a0.9,0.9 0 1,0 -1.8,0"
+        android:fillColor="#FFFFFF" android:fillAlpha="0.36"/>
+    <path android:pathData="M37,33 m-0.7,0 a0.7,0.7 0 1,0 1.4,0 a0.7,0.7 0 1,0 -1.4,0"
+        android:fillColor="#FFFFFF" android:fillAlpha="0.24"/>
+    <path android:pathData="M72,31 m-0.7,0 a0.7,0.7 0 1,0 1.4,0 a0.7,0.7 0 1,0 -1.4,0"
+        android:fillColor="#FFFFFF" android:fillAlpha="0.28"/>
+    <path android:pathData="M48,27 m-0.8,0 a0.8,0.8 0 1,0 1.6,0 a0.8,0.8 0 1,0 -1.6,0"
+        android:fillColor="#FFD166" android:fillAlpha="0.33"/>
+    <path android:pathData="M61,29 m-0.7,0 a0.7,0.7 0 1,0 1.4,0 a0.7,0.7 0 1,0 -1.4,0"
+        android:fillColor="#FFFFFF" android:fillAlpha="0.28"/>
+
+    <!-- ══════════════════════════════════════════
+         HORIZON ATMOSPHERIC GLOW
+         ══════════════════════════════════════════ -->
+
+    <path
+        android:pathData="M25,50 L83,50 L83,55 L25,55 Z"
+        android:fillColor="#FF8C42"
+        android:fillAlpha="0.18"/>
+
+    <!-- Horizon glow line -->
+    <path
+        android:pathData="M25,52 L83,52"
+        android:fillColor="#00000000"
+        android:strokeColor="#FF8C42"
+        android:strokeWidth="0.8"
+        android:strokeAlpha="0.55"/>
+
+    <!-- Horizon light dots -->
+    <path android:pathData="M47,51.5 m-1.5,0 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0"
+        android:fillColor="#FFD166" android:fillAlpha="0.55"/>
+    <path android:pathData="M54,51 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0"
+        android:fillColor="#FFB347" android:fillAlpha="0.65"/>
+    <path android:pathData="M61,51.5 m-1.5,0 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0"
+        android:fillColor="#FFD166" android:fillAlpha="0.55"/>
+    <path android:pathData="M44,52 m-1.2,0 a1.2,1.2 0 1,0 2.4,0 a1.2,1.2 0 1,0 -2.4,0"
+        android:fillColor="#FF8C42" android:fillAlpha="0.38"/>
+    <path android:pathData="M64,52 m-1.2,0 a1.2,1.2 0 1,0 2.4,0 a1.2,1.2 0 1,0 -2.4,0"
+        android:fillColor="#FF8C42" android:fillAlpha="0.38"/>
+
+    <!-- ══════════════════════════════════════════
+         GROUND / ROAD SHOULDER
+         ══════════════════════════════════════════ -->
+
+    <path
+        android:pathData="M25,52 L83,52 L83,81 L25,81 Z"
+        android:fillColor="#253560"
+        android:fillAlpha="0.7"/>
+
+    <!-- ══════════════════════════════════════════
+         ROAD SURFACE (perspective trapezoid)
+         Vanishing: x=54 at y=52  /  Near: y=81
+         ══════════════════════════════════════════ -->
+
+    <path
+        android:pathData="M41,52 L67,52 L81,81 L27,81 Z"
+        android:fillColor="#1E2A45"/>
+
+    <!-- Road center darker strip -->
+    <path
+        android:pathData="M52,52 L56,52 L57,81 L51,81 Z"
+        android:fillColor="#16203A"
+        android:fillAlpha="0.55"/>
+
+    <!-- ══════════════════════════════════════════
+         ROAD EDGE LINES — glowing orange
+         ══════════════════════════════════════════ -->
+
+    <!-- Left line glow -->
+    <path
+        android:pathData="M41,52 L27,81"
+        android:fillColor="#00000000"
+        android:strokeColor="#FF8C42"
+        android:strokeWidth="3.0"
+        android:strokeAlpha="0.22"/>
+    <!-- Left line core -->
+    <path
+        android:pathData="M41,52 L27,81"
+        android:fillColor="#00000000"
+        android:strokeColor="#FF8C42"
+        android:strokeWidth="1.3"
+        android:strokeAlpha="0.90"/>
+
+    <!-- Right line glow -->
+    <path
+        android:pathData="M67,52 L81,81"
+        android:fillColor="#00000000"
+        android:strokeColor="#FF8C42"
+        android:strokeWidth="3.0"
+        android:strokeAlpha="0.22"/>
+    <!-- Right line core -->
+    <path
+        android:pathData="M67,52 L81,81"
+        android:fillColor="#00000000"
+        android:strokeColor="#FF8C42"
+        android:strokeWidth="1.3"
+        android:strokeAlpha="0.90"/>
+
+    <!-- ══════════════════════════════════════════
+         CENTER DASHED LANE MARKINGS (perspective)
+         ══════════════════════════════════════════ -->
+
+    <!-- Dash 1 — nearest, largest -->
+    <path
+        android:pathData="M52,72 L56,72 L55.2,79 L52.8,79 Z"
+        android:fillColor="#FFD166"
+        android:fillAlpha="0.95"/>
+
+    <!-- Dash 2 -->
+    <path
+        android:pathData="M52.7,64 L55.3,64 L55.0,69 L53.0,69 Z"
+        android:fillColor="#FFD166"
+        android:fillAlpha="0.80"/>
+
+    <!-- Dash 3 -->
+    <path
+        android:pathData="M53.2,58 L54.8,58 L54.6,62 L53.4,62 Z"
+        android:fillColor="#FFD166"
+        android:fillAlpha="0.62"/>
+
+    <!-- Dash 4 -->
+    <path
+        android:pathData="M53.5,54.5 L54.5,54.5 L54.4,56.8 L53.6,56.8 Z"
+        android:fillColor="#FFD166"
+        android:fillAlpha="0.42"/>
+
+    <!-- Dash 5 — farthest, tiniest -->
+    <path
+        android:pathData="M53.8,52.8 L54.2,52.8 L54.1,54.0 L53.9,54.0 Z"
+        android:fillColor="#FFD166"
+        android:fillAlpha="0.25"/>
+
+    <!-- ══════════════════════════════════════════
+         GLOSS SHEEN on upper hex half
+         ══════════════════════════════════════════ -->
+
+    <path
+        android:pathData="M54,15 L83,33 L83,48 L25,48 L25,33 Z"
         android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+        android:fillAlpha="0.05"/>
+
+    <!-- ══════════════════════════════════════════
+         HEXAGON BORDER — orange-gold with glow
+         ══════════════════════════════════════════ -->
+
+    <!-- Glow layer (wide, soft) -->
+    <path
+        android:pathData="M54,15 L83,33 L83,63 L54,81 L25,63 L25,33 Z"
+        android:fillColor="#00000000"
+        android:strokeColor="#FF6B35"
+        android:strokeWidth="4.5"
+        android:strokeAlpha="0.40"/>
+
+    <!-- Main border -->
+    <path
+        android:pathData="M54,15 L83,33 L83,63 L54,81 L25,63 L25,33 Z"
+        android:fillColor="#00000000"
+        android:strokeColor="#FFD166"
+        android:strokeWidth="1.8"
+        android:strokeAlpha="0.95"/>
+
+    <!-- Inner hairline accent -->
+    <path
+        android:pathData="M54,17 L81,34.5 L81,61.5 L54,79 L27,61.5 L27,34.5 Z"
+        android:fillColor="#00000000"
+        android:strokeColor="#FFD166"
+        android:strokeWidth="0.6"
+        android:strokeAlpha="0.28"/>
+
+    <!-- ══════════════════════════════════════════
+         TEXT "E68" — real font paths
+         Generated from LiberationSans-Bold, 10dp cap height
+         Centered: x≈41.07–66.93, baseline y=46
+         ══════════════════════════════════════════ -->
+
+    <!-- Text glow layer -->
+    <path
+        android:pathData="M42.041,46.000 V36.000 H49.905 V37.618 H44.135 V40.131 H49.472 V41.749 H44.135 V44.382 H50.196 V46.000 Z M58.322,42.728 Q58.322,44.325,57.428,45.233 Q56.534,46.142,54.958,46.142 Q53.191,46.142,52.243,44.903 Q51.296,43.665,51.296,41.231 Q51.296,38.555,52.258,37.203 Q53.219,35.851,55.008,35.851 Q56.278,35.851,57.013,36.412 Q57.747,36.972,58.053,38.150 L56.172,38.413 Q55.902,37.427,54.965,37.427 Q54.163,37.427,53.705,38.229 Q53.248,39.031,53.248,40.663 Q53.567,40.131,54.135,39.847 Q54.703,39.563,55.419,39.563 Q56.761,39.563,57.542,40.414 Q58.322,41.266,58.322,42.728 Z M56.321,42.785 Q56.321,41.933,55.927,41.483 Q55.533,41.032,54.845,41.032 Q54.185,41.032,53.787,41.454 Q53.390,41.877,53.390,42.572 Q53.390,43.445,53.805,44.016 Q54.220,44.588,54.894,44.588 Q55.568,44.588,55.945,44.109 Q56.321,43.630,56.321,42.785 Z M66.484,43.182 Q66.484,44.588,65.554,45.365 Q64.625,46.142,62.900,46.142 Q61.189,46.142,60.249,45.368 Q59.309,44.595,59.309,43.197 Q59.309,42.238,59.862,41.582 Q60.416,40.925,61.346,40.769 V40.741 Q60.537,40.564,60.040,39.939 Q59.543,39.314,59.543,38.498 Q59.543,37.270,60.412,36.561 Q61.282,35.851,62.872,35.851 Q64.497,35.851,65.366,36.543 Q66.236,37.235,66.236,38.512 Q66.236,39.329,65.742,39.946 Q65.249,40.564,64.419,40.727 V40.755 Q65.384,40.911,65.934,41.546 Q66.484,42.182,66.484,43.182 Z M64.185,38.619 Q64.185,37.909,63.858,37.579 Q63.532,37.249,62.872,37.249 Q61.580,37.249,61.580,38.619 Q61.580,40.053,62.886,40.053 Q63.539,40.053,63.862,39.719 Q64.185,39.385,64.185,38.619 Z M64.419,43.019 Q64.419,41.451,62.857,41.451 Q62.133,41.451,61.747,41.862 Q61.360,42.274,61.360,43.048 Q61.360,43.928,61.743,44.332 Q62.126,44.737,62.914,44.737 Q63.688,44.737,64.053,44.332 Q64.419,43.928,64.419,43.019 Z"
+        android:fillColor="#FF8C42"
+        android:fillAlpha="0.40"/>
+
+    <!-- Text fill — golden gradient simulation (top lighter, bottom deeper) -->
+    <path
+        android:name="text_e68"
+        android:pathData="M42.041,46.000 V36.000 H49.905 V37.618 H44.135 V40.131 H49.472 V41.749 H44.135 V44.382 H50.196 V46.000 Z M58.322,42.728 Q58.322,44.325,57.428,45.233 Q56.534,46.142,54.958,46.142 Q53.191,46.142,52.243,44.903 Q51.296,43.665,51.296,41.231 Q51.296,38.555,52.258,37.203 Q53.219,35.851,55.008,35.851 Q56.278,35.851,57.013,36.412 Q57.747,36.972,58.053,38.150 L56.172,38.413 Q55.902,37.427,54.965,37.427 Q54.163,37.427,53.705,38.229 Q53.248,39.031,53.248,40.663 Q53.567,40.131,54.135,39.847 Q54.703,39.563,55.419,39.563 Q56.761,39.563,57.542,40.414 Q58.322,41.266,58.322,42.728 Z M56.321,42.785 Q56.321,41.933,55.927,41.483 Q55.533,41.032,54.845,41.032 Q54.185,41.032,53.787,41.454 Q53.390,41.877,53.390,42.572 Q53.390,43.445,53.805,44.016 Q54.220,44.588,54.894,44.588 Q55.568,44.588,55.945,44.109 Q56.321,43.630,56.321,42.785 Z M66.484,43.182 Q66.484,44.588,65.554,45.365 Q64.625,46.142,62.900,46.142 Q61.189,46.142,60.249,45.368 Q59.309,44.595,59.309,43.197 Q59.309,42.238,59.862,41.582 Q60.416,40.925,61.346,40.769 V40.741 Q60.537,40.564,60.040,39.939 Q59.543,39.314,59.543,38.498 Q59.543,37.270,60.412,36.561 Q61.282,35.851,62.872,35.851 Q64.497,35.851,65.366,36.543 Q66.236,37.235,66.236,38.512 Q66.236,39.329,65.742,39.946 Q65.249,40.564,64.419,40.727 V40.755 Q65.384,40.911,65.934,41.546 Q66.484,42.182,66.484,43.182 Z M64.185,38.619 Q64.185,37.909,63.858,37.579 Q63.532,37.249,62.872,37.249 Q61.580,37.249,61.580,38.619 Q61.580,40.053,62.886,40.053 Q63.539,40.053,63.862,39.719 Q64.185,39.385,64.185,38.619 Z M64.419,43.019 Q64.419,41.451,62.857,41.451 Q62.133,41.451,61.747,41.862 Q61.360,42.274,61.360,43.048 Q61.360,43.928,61.743,44.332 Q62.126,44.737,62.914,44.737 Q63.688,44.737,64.053,44.332 Q64.419,43.928,64.419,43.019 Z"
+        android:fillColor="#FFD166"/>
+
 </vector>

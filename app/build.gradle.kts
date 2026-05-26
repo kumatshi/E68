@@ -194,6 +194,9 @@ dependencies {
     implementation("com.itextpdf:io:7.2.5")
 // И явно укажите kernel для надежности
     implementation("com.itextpdf:kernel:7.2.5")
+    implementation("com.airbnb.android:lottie:6.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
 
 
 

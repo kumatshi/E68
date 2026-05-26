@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    E68 App Icon — Adaptive Icon descriptor
+    Place in: res/mipmap-anydpi-v26/ic_launcher.xml
+
+    Requires API 26+. For older APIs, also provide PNG versions in
+    res/mipmap-mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi folders.
+-->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+    <background android:drawable="@drawable/ic_launcher_background"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
 </adaptive-icon>
