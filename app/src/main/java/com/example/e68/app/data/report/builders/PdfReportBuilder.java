@@ -1,4 +1,4 @@
- package com.example.e68.app.data.report.builders;
+package com.example.e68.app.data.report.builders;
 
 import android.content.Context;
 
@@ -44,6 +44,12 @@ public class PdfReportBuilder {
             File file,
             List<Defect> defects
     ) throws Exception {
+
+        // Создаём родительскую директорию, если её нет
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
 
         PdfWriter writer =
                 new PdfWriter(new FileOutputStream(file));
@@ -285,4 +291,3 @@ public class PdfReportBuilder {
                 : text;
     }
 }
-

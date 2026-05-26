@@ -17,13 +17,6 @@ import com.example.e68.app.presentation.common.BaseFragment;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
-/**
- * LoginFragment — исправлен.
- *
- * Ключевое: перед navigate() вызываем applyRoleMenu()
- * → нижняя панель показывает правильные вкладки ДО перехода.
- * Без этого вкладки менеджера/админа крашат приложение.
- */
 @AndroidEntryPoint
 public class LoginFragment extends BaseFragment<FragmentLoginBinding> {
 
@@ -64,9 +57,12 @@ public class LoginFragment extends BaseFragment<FragmentLoginBinding> {
         viewModel.getLoginSuccess().observe(getViewLifecycleOwner(), user -> {
             if (user == null) return;
 
-            // ★ Сначала применяем меню, потом навигируем — это обязательно
             MainActivity activity = (MainActivity) requireActivity();
 
+            // ★★★ ВАЖНО: Обновляем startDestination на профиль ★★★
+            activity.refreshNavigationAfterLogin();
+
+            // Применяем меню для роли
             if (user.isInspector()) {
                 activity.applyRoleMenu("INSPECTOR");
                 Navigation.findNavController(requireView())

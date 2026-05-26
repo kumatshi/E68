@@ -1,6 +1,7 @@
- package com.example.e68.app.data.report;
+package com.example.e68.app.data.report;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 
 import com.example.e68.app.data.report.builders.ExcelReportBuilder;
@@ -33,11 +34,27 @@ public class ReportGenerator {
 
             File file = buildFile("pdf");
 
+            if (file == null) {
+                System.err.println("Не удалось создать файл PDF");
+                return null;
+            }
+
+            // Создаём директорию перед записью
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                boolean created = parentDir.mkdirs();
+                if (!created) {
+                    System.err.println("Не удалось создать директорию: " + parentDir.getAbsolutePath());
+                    return null;
+                }
+            }
+
             PdfReportBuilder builder =
                     new PdfReportBuilder(context);
 
             builder.generate(file, defects);
 
+            System.out.println("PDF сохранён: " + file.getAbsolutePath());
             return file.getAbsolutePath();
 
         } catch (Exception e) {
@@ -58,11 +75,27 @@ public class ReportGenerator {
 
             File file = buildFile("xlsx");
 
+            if (file == null) {
+                System.err.println("Не удалось создать файл Excel");
+                return null;
+            }
+
+            // Создаём директорию перед записью
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                boolean created = parentDir.mkdirs();
+                if (!created) {
+                    System.err.println("Не удалось создать директорию: " + parentDir.getAbsolutePath());
+                    return null;
+                }
+            }
+
             ExcelReportBuilder builder =
                     new ExcelReportBuilder();
 
             builder.generate(file, defects);
 
+            System.out.println("Excel сохранён: " + file.getAbsolutePath());
             return file.getAbsolutePath();
 
         } catch (Exception e) {
@@ -79,15 +112,11 @@ public class ReportGenerator {
 
     private File buildFile(String ext) {
 
-        File dir = new File(
-                Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_DOWNLOADS
-                ),
-                REPORTS_DIR
-        );
+        File dir = getWritableDirectory();
 
-        if (!dir.exists()) {
-            dir.mkdirs();
+        if (dir == null) {
+            System.err.println("Не удалось получить доступную директорию");
+            return null;
         }
 
         String timestamp =
@@ -101,5 +130,36 @@ public class ReportGenerator {
                 "E68_Report_" + timestamp + "." + ext
         );
     }
-}
 
+    /**
+     * Получает доступную для записи директорию
+     * Использует внутреннее хранилище приложения (всегда доступно без разрешений)
+     */
+    private File getWritableDirectory() {
+
+        // Пытаемся использовать внутреннее хранилище приложения (не требует разрешений)
+        try {
+            File appDir = context.getExternalFilesDir(null);
+            if (appDir == null) {
+                appDir = context.getFilesDir();
+            }
+            File reportsDir = new File(appDir, REPORTS_DIR);
+            System.out.println("Используем внутреннее хранилище: " + reportsDir.getAbsolutePath());
+            return reportsDir;
+        } catch (Exception e) {
+            System.err.println("Ошибка доступа к внутреннему хранилищу: " + e.getMessage());
+        }
+
+        // Fallback - кэш приложения
+        try {
+            File cacheDir = context.getCacheDir();
+            File reportsDir = new File(cacheDir, REPORTS_DIR);
+            System.out.println("Используем кэш: " + reportsDir.getAbsolutePath());
+            return reportsDir;
+        } catch (Exception e) {
+            System.err.println("Ошибка доступа к кэшу: " + e.getMessage());
+        }
+
+        return null;
+    }
+}

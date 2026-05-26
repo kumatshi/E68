@@ -5,44 +5,39 @@ import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
+import androidx.navigation.NavGraph;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.e68.app.R;
 import com.example.e68.app.databinding.ActivityMainBinding;
+import com.example.e68.app.data.repository.UserRepositoryImpl;
+import com.example.e68.app.domain.entity.User;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
-/**
- * MainActivity — исправленная версия.
- *
- * ╔══ ПРОБЛЕМА ══════════════════════════════════════════════════╗
- * ║ NavigationUI.setupWithNavController() привязывает bottomNav  ║
- * ║ к стартовому графу (инспектор). Когда менеджер/админ         ║
- * ║ нажимает свои вкладки — NavController не находит destination  ║
- * ║ → IllegalArgumentException → краш.                           ║
- * ╚══════════════════════════════════════════════════════════════╝
- *
- * ╔══ РЕШЕНИЕ ═══════════════════════════════════════════════════╗
- * ║ 1. Убран NavigationUI.setupWithNavController().              ║
- * ║ 2. Ручной setOnItemSelectedListener + try/catch.             ║
- * ║ 3. Проверка "уже на этом экране" перед navigate().           ║
- * ║ 4. applyRoleMenu() меняет меню ДО первого тапа по вкладке.  ║
- * ╚══════════════════════════════════════════════════════════════╝
- */
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
+    @Inject
+    UserRepositoryImpl userRepository;  // Инжектим репозиторий пользователей
+
     private ActivityMainBinding binding;
     private NavController navController;
+
+    // Храним роль текущего пользователя
+    private String currentUserRole = "INSPECTOR"; // По умолчанию инспектор
 
     // Экраны где нижняя панель СКРЫТА
     private static final Set<Integer> HIDE_NAV = new HashSet<>(Arrays.asList(
@@ -57,6 +52,23 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setupNavController();
+        observeCurrentUser();
+    }
+
+    /**
+     * Наблюдаем за текущим пользователем, чтобы обновлять роль
+     */
+    private void observeCurrentUser() {
+        userRepository.getCurrentUser().observe(this, user -> {
+            if (user != null) {
+                String role = getRoleString(user);
+                if (!role.equals(currentUserRole)) {
+                    currentUserRole = role;
+                    applyRoleMenu(role);
+                    setStartDestinationBasedOnRole();
+                }
+            }
+        });
     }
 
     private void setupNavController() {
@@ -67,6 +79,9 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         navController = host.getNavController();
+
+        // Устанавливаем startDestination в зависимости от роли
+        setStartDestinationBasedOnRole();
 
         // Показываем/скрываем нижнюю панель
         navController.addOnDestinationChangedListener((ctrl, dest, args) -> {
@@ -82,13 +97,74 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Устанавливает startDestination в зависимости от роли
+     */
+    private void setStartDestinationBasedOnRole() {
+        int startDestId = getProfileDestinationForRole(currentUserRole);
+        Log.d(TAG, "Setting startDestination for role " + currentUserRole + " to: " + startDestId);
+        setStartDestination(startDestId);
+    }
+
+    /**
+     * Возвращает строку роли пользователя
+     */
+    private String getRoleString(User user) {
+        if (user == null) return "INSPECTOR";
+        String role = user.getRole();
+        if (role == null) return "INSPECTOR";
+
+        switch (role.toUpperCase()) {
+            case "ADMIN":
+                return "ADMIN";
+            case "MANAGER":
+                return "MANAGER";
+            default:
+                return "INSPECTOR";
+        }
+    }
+
+    /**
+     * Возвращает ID фрагмента профиля для конкретной роли
+     * ПРОФИЛЬ - первый экран после входа!
+     */
+    private int getProfileDestinationForRole(String role) {
+        if (role == null) return R.id.nav_profile;
+
+        switch (role) {
+            case "ADMIN":
+                return R.id.nav_admin_profile;    // Профиль администратора
+            case "MANAGER":
+                return R.id.nav_manager_profile;  // Профиль менеджера
+            default:
+                return R.id.nav_profile;           // Профиль инспектора
+        }
+    }
+
+    /**
+     * Устанавливает новый startDestination в графе навигации
+     */
+    private void setStartDestination(int startDestId) {
+        if (navController == null) return;
+
+        NavGraph navGraph = navController.getGraph();
+        int currentStartDest = navGraph.getStartDestination();
+
+        if (currentStartDest == startDestId) {
+            Log.d(TAG, "Start destination already set to " + startDestId);
+            return;
+        }
+
+        navGraph.setStartDestination(startDestId);
+        Log.d(TAG, "Start destination changed from " + currentStartDest + " to " + startDestId);
+    }
+
+    /**
      * Безопасный navigate(): не крашится, не дублирует back stack.
      */
     private boolean safeNavigateTo(int destId) {
         if (navController == null) return false;
 
         NavDestination current = navController.getCurrentDestination();
-        // Уже на этом экране
         if (current != null && current.getId() == destId) return true;
 
         try {
@@ -108,24 +184,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Устанавливает нижнее меню по роли.
-     * Вызывать из LoginFragment ДО navigate():
-     *
-     *   ((MainActivity) requireActivity()).applyRoleMenu("MANAGER");
-     *   Navigation.findNavController(requireView())
-     *       .navigate(R.id.action_loginFragment_to_managerFragment);
+     * Устанавливает нижнее меню по роли
      */
     public void applyRoleMenu(String role) {
         if (role == null) role = "INSPECTOR";
+        currentUserRole = role; // Сохраняем роль
         int menuRes;
         switch (role.toUpperCase()) {
-            case "MANAGER": menuRes = R.menu.menu_bottom_nav_manager; break;
-            case "ADMIN":   menuRes = R.menu.menu_bottom_nav_admin;   break;
-            default:        menuRes = R.menu.menu_bottom_nav_inspector; break;
+            case "MANAGER":
+                menuRes = R.menu.menu_bottom_nav_manager;
+                break;
+            case "ADMIN":
+                menuRes = R.menu.menu_bottom_nav_admin;
+                break;
+            default:
+                menuRes = R.menu.menu_bottom_nav_inspector;
+                break;
         }
         binding.bottomNavigation.getMenu().clear();
         binding.bottomNavigation.inflateMenu(menuRes);
         Log.d(TAG, "Menu applied for role: " + role);
+    }
+
+    /**
+     * Обновляет навигацию после входа
+     */
+    public void refreshNavigationAfterLogin() {
+        Log.d(TAG, "Refreshing navigation after login");
+        setStartDestinationBasedOnRole();
     }
 
     public void showOfflineBanner(boolean show, int pendingCount) {

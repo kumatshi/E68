@@ -1,4 +1,4 @@
- package com.example.e68.app.data.report.builders;
+package com.example.e68.app.data.report.builders;
 
 import com.example.e68.app.domain.entity.Defect;
 
@@ -15,6 +15,12 @@ public class ExcelReportBuilder {
             File file,
             List<Defect> defects
     ) throws Exception {
+
+        // Создаём родительскую директорию, если её нет
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
 
         XSSFWorkbook workbook =
                 new XSSFWorkbook();
@@ -63,9 +69,9 @@ public class ExcelReportBuilder {
             create(row, 4, safe(d.getSeverity()), dataStyle);
         }
 
-        for (int i = 0; i < headers.length; i++) {
-            sheet.autoSizeColumn(i);
-        }
+        // ❌ УДАЛЕНО: sheet.autoSizeColumn(i);
+        // ✅ Вместо autoSizeColumn используем фиксированную ширину колонок
+        setColumnWidths(sheet, headers);
 
         sheet.setAutoFilter(
                 new org.apache.poi.ss.util.CellRangeAddress(
@@ -84,6 +90,39 @@ public class ExcelReportBuilder {
         fos.close();
 
         workbook.close();
+    }
+
+    /**
+     * Устанавливает ширину колонок вручную
+     * (замена для autoSizeColumn, который требует AWT и недоступен на Android)
+     */
+    private void setColumnWidths(Sheet sheet, String[] headers) {
+        for (int i = 0; i < headers.length; i++) {
+            // 256 = ширина одного символа в Excel
+            // 15 = минимальная ширина, 50 = максимальная
+            int width = calculateColumnWidth(headers[i], i);
+            sheet.setColumnWidth(i, width);
+        }
+    }
+
+    /**
+     * Рассчитывает ширину колонки на основе заголовка
+     */
+    private int calculateColumnWidth(String header, int columnIndex) {
+        switch (columnIndex) {
+            case 0: // №
+                return 5 * 256;
+            case 1: // Описание
+                return 40 * 256;
+            case 2: // Адрес
+                return 35 * 256;
+            case 3: // Статус
+                return 15 * 256;
+            case 4: // Серьёзность
+                return 15 * 256;
+            default:
+                return 20 * 256;
+        }
     }
 
     private CellStyle createHeaderStyle(
@@ -152,4 +191,3 @@ public class ExcelReportBuilder {
                 : text;
     }
 }
-
