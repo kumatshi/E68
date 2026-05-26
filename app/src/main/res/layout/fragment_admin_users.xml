@@ -159,11 +159,25 @@
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
+    <!-- Кнопка экспорта -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnExportUsers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="📊 Экспорт всех данных"
+        style="@style/Widget.Material3.Button.OutlinedButton" />
+
     <!-- Список пользователей -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
+
+        <!-- RecyclerView с ID usersRecyclerView (для кода) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/usersRecyclerView"
             android:layout_width="match_parent"
@@ -172,6 +186,26 @@
             android:paddingEnd="16dp"
             android:paddingBottom="16dp"
             android:clipToPadding="false" />
+
+        <!-- RecyclerView с ID recyclerView (альтернативный ID для совместимости) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"
+            android:visibility="gone" />
+
+        <!-- ProgressBar -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
         <LinearLayout
             android:id="@+id/emptyState"
             android:layout_width="match_parent"
@@ -187,5 +221,15 @@
                 android:layout_marginTop="16dp" />
         </LinearLayout>
     </FrameLayout>
+
+    <!-- Floating Action Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddUser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add"
+        app:useCompatPadding="true" />
 
 </LinearLayout>

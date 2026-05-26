@@ -152,11 +152,7 @@
         </action>
     </fragment>
 
-    <fragment
-        android:id="@+id/nav_manager_patrols"
-        android:name="com.example.e68.app.presentation.manager.ManagerPatrolsFragment"
-        android:label="Объезды"
-        tools:layout="@layout/fragment_manager_patrols" />
+
 
     <fragment
         android:id="@+id/nav_manager_analytics"
@@ -176,13 +172,21 @@
 
     <fragment
         android:id="@+id/adminFragment"
-        android:name="com.example.e68.app.presentation.admin.AdminFragment"
+        android:name="com.example.e68.app.presentation.admin.AdminUsersFragment"
         android:label="Сотрудники"
-        tools:layout="@layout/fragment_admin_users" />
+        tools:layout="@layout/fragment_admin_users">
+
+        <action
+            android:id="@+id/action_adminUsersFragment_to_adminEditUserFragment"
+            app:destination="@id/adminEditUserFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/nav_admin_users"
-        android:name="com.example.e68.app.presentation.admin.AdminFragment"
+        android:name="com.example.e68.app.presentation.admin.AdminUsersFragment"
         android:label="Сотрудники"
         tools:layout="@layout/fragment_admin_users" />
 
@@ -217,5 +221,14 @@
         android:name="com.example.e68.app.presentation.profile.ProfileFragment"
         android:label="Профиль"
         tools:layout="@layout/fragment_profile" />
+
+    <!-- ══════════════════════════════════════════
+         АДМИН — РЕДАКТИРОВАНИЕ ПОЛЬЗОВАТЕЛЯ
+         ══════════════════════════════════════════ -->
+    <fragment
+        android:id="@+id/adminEditUserFragment"
+        android:name="com.example.e68.app.presentation.admin.AdminEditUserFragment"
+        android:label="Редактирование пользователя"
+        tools:layout="@layout/fragment_admin_edit_user" />
 
 </navigation>

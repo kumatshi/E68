@@ -26,7 +26,7 @@
     <color name="status_open_bg">#331320</color>
     <color name="status_in_progress">#FFD166</color>
     <color name="status_in_progress_bg">#332B0A</color>
-    <color name="status_resolved">#06D6A0</color>
+    <color name="status_resolved">#06D6A0</color>   <!-- ← ОДИН РАЗ! -->
     <color name="status_resolved_bg">#0A2B23</color>
     <color name="status_rejected">#8892A4</color>
     <color name="status_rejected_bg">#1A1F2E</color>
@@ -46,5 +46,14 @@
 
     <!-- Map overlay -->
     <color name="map_overlay">#CC131722</color>
-</resources>
 
+    <!-- Альтернативные фоны -->
+    <color name="background_light">#1A1F2E</color>
+    <color name="surface_light">#252B3D</color>
+
+    <!-- Селекторы для Chip -->
+    <color name="selector_chip_text">#FFFFFF</color>
+    <color name="selector_chip_bg">#2D3449</color>
+    <color name="selector_chip_stroke">#4A5568</color>
+
+</resources>
