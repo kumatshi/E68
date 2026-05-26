@@ -13,6 +13,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import android.Manifest;
+import androidx.core.content.ContextCompat;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.content.ContextCompat;
 
 public class ReportGenerator {
 
@@ -133,11 +138,30 @@ public class ReportGenerator {
 
     /**
      * Получает доступную для записи директорию
-     * Использует внутреннее хранилище приложения (всегда доступно без разрешений)
+     * Приоритет: Download (есть разрешения) → внутреннее хранилище (fallback)
      */
     private File getWritableDirectory() {
 
-        // Пытаемся использовать внутреннее хранилище приложения (не требует разрешений)
+        // Проверяем, есть ли доступ к внешнему хранилищу
+        boolean hasStoragePermission = hasStoragePermission();
+
+        if (hasStoragePermission) {
+            // Пытаемся использовать папку Download
+            try {
+                File downloadDir = Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DOWNLOADS
+                );
+                if (downloadDir != null) {
+                    File reportsDir = new File(downloadDir, REPORTS_DIR);
+                    System.out.println("Используем папку Download: " + reportsDir.getAbsolutePath());
+                    return reportsDir;
+                }
+            } catch (Exception e) {
+                System.err.println("Ошибка доступа к Download: " + e.getMessage());
+            }
+        }
+
+        // Fallback: внутреннее хранилище приложения (всегда доступно)
         try {
             File appDir = context.getExternalFilesDir(null);
             if (appDir == null) {
@@ -150,7 +174,7 @@ public class ReportGenerator {
             System.err.println("Ошибка доступа к внутреннему хранилищу: " + e.getMessage());
         }
 
-        // Fallback - кэш приложения
+        // Последний fallback - кэш
         try {
             File cacheDir = context.getCacheDir();
             File reportsDir = new File(cacheDir, REPORTS_DIR);
@@ -161,5 +185,19 @@ public class ReportGenerator {
         }
 
         return null;
+    }
+
+    /**
+     * Проверяет наличие разрешений на запись в хранилище
+     */
+    private boolean hasStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11+: проверяем MANAGE_EXTERNAL_STORAGE
+            return Environment.isExternalStorageManager();
+        } else {
+            // Android 10 и ниже: проверяем WRITE_EXTERNAL_STORAGE
+            return ContextCompat.checkSelfPermission(context,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
     }
 }

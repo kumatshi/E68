@@ -1,10 +1,21 @@
 package com.example.e68.app.presentation;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
@@ -30,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
+    // Константы для запроса разрешений
+    private static final int PERMISSION_REQUEST_CODE = 100;
+    private static final int MANAGE_STORAGE_REQUEST_CODE = 101;
+
     @Inject
     UserRepositoryImpl userRepository;  // Инжектим репозиторий пользователей
 
@@ -51,8 +66,130 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Проверяем и запрашиваем разрешения на запись в хранилище
+        checkAndRequestStoragePermissions();
+
         setupNavController();
         observeCurrentUser();
+    }
+
+    /**
+     * Проверяет и запрашивает разрешения на запись в хранилище
+     */
+    private void checkAndRequestStoragePermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11+ (API 30+) - нужен доступ ко всем файлам
+            if (!Environment.isExternalStorageManager()) {
+                requestManageStoragePermission();
+            } else {
+                Log.d(TAG, "MANAGE_EXTERNAL_STORAGE permission already granted");
+            }
+        } else {
+            // Android 10 и ниже - классические разрешения
+            String[] permissions = {
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            };
+
+            boolean allGranted = true;
+            for (String permission : permissions) {
+                if (ContextCompat.checkSelfPermission(this, permission)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (!allGranted) {
+                ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
+            } else {
+                Log.d(TAG, "Storage permissions already granted");
+            }
+        }
+    }
+
+    /**
+     * Запрашивает разрешение на управление хранилищем для Android 11+
+     */
+    private void requestManageStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, MANAGE_STORAGE_REQUEST_CODE);
+                Log.d(TAG, "Requesting MANAGE_EXTERNAL_STORAGE permission");
+            } catch (Exception e) {
+                Log.e(TAG, "Error requesting storage permission: " + e.getMessage());
+                // Fallback - показываем сообщение пользователю
+                Toast.makeText(this,
+                        "Для сохранения отчётов в папку Загрузки нужно разрешение.\n" +
+                                "Откройте Настройки → Приложения → E68 → Разрешения → Файлы и медиа → Разрешить",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            boolean allGranted = true;
+            for (int i = 0; i < grantResults.length; i++) {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    Log.e(TAG, "Permission denied: " + permissions[i]);
+                }
+            }
+
+            if (allGranted) {
+                Log.d(TAG, "All storage permissions granted");
+                Toast.makeText(this, "Разрешения получены. Отчёты будут сохраняться в папку Загрузки",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Log.w(TAG, "Some storage permissions were denied");
+                Toast.makeText(this,
+                        "Для сохранения отчётов в папку Загрузки нужны разрешения.\n" +
+                                "Отчёты будут сохранены в кэш приложения.",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == MANAGE_STORAGE_REQUEST_CODE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    Log.d(TAG, "MANAGE_EXTERNAL_STORAGE permission granted");
+                    Toast.makeText(this, "Разрешение получено. Отчёты будут сохраняться в папку Загрузки",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.w(TAG, "MANAGE_EXTERNAL_STORAGE permission denied");
+                    Toast.makeText(this,
+                            "Разрешение не получено. Отчёты будут сохранены в кэш приложения.\n" +
+                                    "Чтобы сохранять в папку Загрузки, дайте разрешение в настройках.",
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    /**
+     * Проверяет, есть ли разрешение на запись в хранилище
+     * Можно использовать в ReportGenerator
+     */
+    public boolean hasStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return Environment.isExternalStorageManager();
+        } else {
+            return ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
     }
 
     /**
