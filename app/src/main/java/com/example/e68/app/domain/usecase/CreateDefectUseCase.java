@@ -18,7 +18,7 @@ public class CreateDefectUseCase {
     }
 
     public LiveData<Resource<Defect>> execute(Defect defect) {
-        // Здесь можно добавить валидацию
+
         if (defect.getTitle() == null || defect.getTitle().isEmpty()) {
             return new LiveData<Resource<Defect>>() {
                 @Override

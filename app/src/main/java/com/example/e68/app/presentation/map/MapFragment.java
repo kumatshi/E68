@@ -1,6 +1,8 @@
 package com.example.e68.app.presentation.map;
 
 import android.graphics.PointF;
+import android.graphics.Typeface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -10,6 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,6 +26,7 @@ import com.example.e68.app.R;
 import com.example.e68.app.databinding.FragmentMapBinding;
 import com.example.e68.app.domain.entity.Defect;
 import com.example.e68.app.presentation.common.BaseFragment;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.yandex.mapkit.Animation;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.geometry.BoundingBox;
@@ -48,32 +54,43 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MapFragment extends BaseFragment<FragmentMapBinding> {
 
-    private static final double CLUSTER_RADIUS  = 60.0;
-    private static final int    CLUSTER_MIN_ZOOM = 15;
+    private static final double CLUSTER_RADIUS   = 60.0;
+    private static final int    CLUSTER_MIN_ZOOM = 20; // увеличено — кластеры не пропадают
 
     private MapViewModel viewModel;
 
     // ── Коллекции маркеров ────────────────────────────────────────
-    private ClusterizedPlacemarkCollection defectClusterCollection;  // маркеры дефектов
-    private MapObjectCollection searchResultCollection;              // маркеры поиска
+    private ClusterizedPlacemarkCollection defectClusterCollection;
+    private MapObjectCollection            searchResultCollection;
 
-    // GC guard — иначе слушатели удаляются
+    // GC guard
     private final List<MapObjectTapListener> tapListeners = new ArrayList<>();
 
     // ── Адаптер саджестов ─────────────────────────────────────────
     private SuggestAdapter suggestAdapter;
 
-    // ── Camera listener — передаём регион в VM ───────────────────
+    // ── Camera listener ───────────────────────────────────────────
     private final CameraListener cameraListener = (map, pos, reason, finished) -> {
         if (reason == CameraUpdateReason.GESTURES && finished) {
             viewModel.setVisibleRegion(binding.mapView.getMap().getVisibleRegion());
         }
     };
 
-    // ── Cluster listeners (порядок важен: tap до listener) ────────
+    // ── Cluster listeners ─────────────────────────────────────────
 
     private final ClusterTapListener clusterTapListener = cluster -> {
-        showToast("Дефектов в кластере: " + cluster.getSize());
+        List<Defect> defectsInCluster = new ArrayList<>();
+        for (PlacemarkMapObject p : cluster.getPlacemarks()) {
+            Object ud = p.getUserData();
+            if (ud instanceof DefectMarker) {
+                defectsInCluster.add(((DefectMarker) ud).defect);
+            }
+        }
+        if (defectsInCluster.size() == 1) {
+            navigateToDefectDetail(defectsInCluster.get(0));
+        } else {
+            showClusterSelectionSheet(defectsInCluster);
+        }
         return true;
     };
 
@@ -139,12 +156,10 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
         binding.mapView.getMap().addCameraListener(cameraListener);
         viewModel.setVisibleRegion(binding.mapView.getMap().getVisibleRegion());
 
-        // Коллекция дефектов с кластеризацией
         defectClusterCollection = binding.mapView.getMap()
                 .getMapObjects()
                 .addClusterizedPlacemarkCollection(clusterListener);
 
-        // Отдельная коллекция для результатов поиска (без кластеризации)
         searchResultCollection = binding.mapView.getMap()
                 .getMapObjects()
                 .addCollection();
@@ -159,7 +174,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
             if (item.isSearchAction || item.uri != null) {
                 viewModel.startSearchByText(item.searchText);
             } else {
-                // Просто подставляем текст, не запускаем поиск
                 binding.etSearch.setText(item.searchText);
                 binding.etSearch.setSelection(item.searchText.length());
             }
@@ -168,7 +182,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
         binding.rvSuggests.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvSuggests.setAdapter(suggestAdapter);
 
-        // TextWatcher — саджест на каждый символ
         binding.etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
             @Override public void afterTextChanged(Editable s) {}
@@ -186,7 +199,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
             }
         });
 
-        // Enter / Done — запуск поиска
         binding.etSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH ||
                     (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
@@ -198,25 +210,23 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
             return false;
         });
 
-        // Кнопка поиска (лупа)
         binding.btnSearch.setOnClickListener(v -> {
             hideSuggests();
             hideKeyboard();
             viewModel.startSearch();
         });
 
-        // Кнопка сброса (×)
         binding.btnSearchClear.setOnClickListener(v -> {
             binding.etSearch.setText("");
             hideSuggests();
             hideKeyboard();
             viewModel.resetSearch();
             binding.btnSearchClear.setVisibility(View.GONE);
-            // Показываем фильтры дефектов обратно
             binding.chipGroupFilter.setVisibility(View.VISIBLE);
         });
     }
 
+    // ── Filter chips ──────────────────────────────────────────────
 
     private void setupFilterChips() {
         binding.chipAll.setOnCheckedChangeListener((b, c)      -> { if (c) viewModel.setSeverityFilter(null); });
@@ -251,7 +261,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
     // ── Observers — поиск ─────────────────────────────────────────
 
     private void observeSearch() {
-        // Саджесты
         viewModel.getSuggests().observe(getViewLifecycleOwner(), items -> {
             if (items == null || items.isEmpty()) {
                 hideSuggests();
@@ -261,33 +270,27 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
             }
         });
 
-        // Результаты поиска
         viewModel.getSearchResults().observe(getViewLifecycleOwner(), items -> {
             if (items == null) {
                 clearSearchMarkers();
                 return;
             }
             showSearchResults(items);
-            // Скрываем фильтры дефектов пока активен поиск
             binding.chipGroupFilter.setVisibility(View.GONE);
         });
 
-        // Зум на результаты
         viewModel.getSearchBoundingBox().observe(getViewLifecycleOwner(), bbox -> {
             if (bbox != null) zoomToBoundingBox(bbox);
         });
 
-        // Прогресс
         viewModel.getSearchLoading().observe(getViewLifecycleOwner(), loading ->
                 binding.progressSearch.setVisibility(
                         Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE));
 
-        // Ошибки
         viewModel.getSearchError().observe(getViewLifecycleOwner(), err -> {
             if (err != null) showToast(err);
         });
 
-        // Сброс поиска — возвращаем дефекты
         viewModel.getSearchActive().observe(getViewLifecycleOwner(), active -> {
             if (!Boolean.TRUE.equals(active)) {
                 clearSearchMarkers();
@@ -319,7 +322,9 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
 
             MapObjectTapListener listener = (obj, pt) -> {
                 Object ud = obj.getUserData();
-                if (ud instanceof DefectMarker) viewModel.selectDefect(((DefectMarker) ud).defect);
+                if (ud instanceof DefectMarker) {
+                    navigateToDefectDetail(((DefectMarker) ud).defect);
+                }
                 return true;
             };
             tapListeners.add(listener);
@@ -334,7 +339,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
         searchResultCollection.clear();
         tapListeners.clear();
 
-        // Иконка для результатов поиска
         ImageProvider searchIcon = ImageProvider.fromResource(
                 requireContext(), R.drawable.ic_search_pin);
 
@@ -360,7 +364,107 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
         searchResultCollection.clear();
     }
 
-    // ── Bottom Sheet — дефект ─────────────────────────────────────
+    // ── Навигация в detail ────────────────────────────────────────
+
+    private void navigateToDefectDetail(Defect defect) {
+        Bundle args = new Bundle();
+        args.putLong("defectId", defect.getId());
+        Navigation.findNavController(requireView())
+                .navigate(R.id.action_mapFragment_to_defectDetail, args);
+    }
+
+    // ── Bottom sheet: выбор дефекта из кластера ───────────────────
+
+    private void showClusterSelectionSheet(List<Defect> defects) {
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+
+        int dp16 = dp(16);
+        int dp12 = dp(12);
+        int dp8  = dp(8);
+        int dp4  = dp(4);
+        int dp1  = dp(1);
+
+        LinearLayout container = new LinearLayout(requireContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(dp16, dp16, dp16, dp16);
+
+        // Заголовок
+        TextView header = new TextView(requireContext());
+        header.setText("Дефекты в кластере (" + defects.size() + ")");
+        header.setTextSize(16f);
+        header.setTypeface(null, Typeface.BOLD);
+        LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        headerParams.bottomMargin = dp12;
+        header.setLayoutParams(headerParams);
+        container.addView(header);
+
+        // Разделитель под заголовком
+        container.addView(makeDivider(dp1, 0xFF_DDDDDD));
+
+        for (Defect defect : defects) {
+            // Строка дефекта
+            LinearLayout row = new LinearLayout(requireContext());
+            row.setOrientation(LinearLayout.VERTICAL);
+            row.setPadding(0, dp12, 0, dp12);
+            row.setClickable(true);
+            row.setFocusable(true);
+            row.setBackground(getRowRipple());
+
+            // Название
+            TextView tvTitle = new TextView(requireContext());
+            tvTitle.setText(defect.getTitle() != null ? defect.getTitle() : "Без названия");
+            tvTitle.setTextSize(14f);
+            tvTitle.setTypeface(null, Typeface.BOLD);
+            row.addView(tvTitle);
+
+            // Адрес
+            TextView tvAddress = new TextView(requireContext());
+            tvAddress.setText(defect.getAddress() != null ? defect.getAddress() : "Адрес не указан");
+            tvAddress.setTextSize(12f);
+            tvAddress.setAlpha(0.6f);
+            LinearLayout.LayoutParams addrParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            addrParams.topMargin = dp4 / 2;
+            tvAddress.setLayoutParams(addrParams);
+            row.addView(tvAddress);
+
+            // Severity badge
+            String severity = defect.getSeverity() != null ? defect.getSeverity() : "MEDIUM";
+            TextView tvSeverity = new TextView(requireContext());
+            tvSeverity.setText(severity);
+            tvSeverity.setTextSize(11f);
+            tvSeverity.setTextColor(Color.WHITE);
+            tvSeverity.setTypeface(null, Typeface.BOLD);
+            tvSeverity.setPadding(dp8, dp4, dp8, dp4);
+            tvSeverity.setBackgroundColor(
+                    DefectMarkerType.fromSeverity(severity).getClusterColor());
+            LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            badgeParams.topMargin = dp4;
+            tvSeverity.setLayoutParams(badgeParams);
+            row.addView(tvSeverity);
+
+            row.setOnClickListener(v -> {
+                dialog.dismiss();
+                navigateToDefectDetail(defect);
+            });
+
+            container.addView(row);
+            container.addView(makeDivider(dp1, 0xFF_EEEEEE));
+        }
+
+        ScrollView scrollView = new ScrollView(requireContext());
+        scrollView.addView(container);
+
+        dialog.setContentView(scrollView);
+        dialog.show();
+    }
+
+    // ── Bottom Sheet — дефект (одиночный маркер) ──────────────────
 
     private void showDefectBottomSheet(Defect defect) {
         hideSearchBottomSheet();
@@ -380,10 +484,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
 
         binding.btnDefectDetails.setOnClickListener(v -> {
             binding.cardDefectPreview.setVisibility(View.GONE);
-            Bundle args = new Bundle();
-            args.putLong("defectId", defect.getId());
-            Navigation.findNavController(requireView())
-                    .navigate(R.id.action_mapFragment_to_defectDetail, args);
+            navigateToDefectDetail(defect);
         });
 
         binding.btnClosePreview.setOnClickListener(v ->
@@ -438,6 +539,28 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
                     requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
             if (imm != null) imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
         }
+    }
+
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density);
+    }
+
+    private View makeDivider(int heightPx, int color) {
+        View divider = new View(requireContext());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, heightPx);
+        divider.setLayoutParams(params);
+        divider.setBackgroundColor(color);
+        return divider;
+    }
+
+    private android.graphics.drawable.Drawable getRowRipple() {
+        int[] attrs = new int[]{android.R.attr.selectableItemBackground};
+        android.content.res.TypedArray ta =
+                requireContext().obtainStyledAttributes(attrs);
+        android.graphics.drawable.Drawable ripple = ta.getDrawable(0);
+        ta.recycle();
+        return ripple;
     }
 
     // ── Inner classes ─────────────────────────────────────────────

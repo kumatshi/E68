@@ -219,7 +219,7 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
         });
     }
 
-    // ── GPS ───────────────────────────────────────────────────────
+    //  GPS
 
     private void fetchGps() {
         binding.btnGetGps.setEnabled(false);

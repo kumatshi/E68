@@ -6,7 +6,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
 public class Defect {
 
     private long   id;
-    private String localUuid;   // Firestore document ID
+    private String localUuid;
     private String title;
     private String description;
     private String type;
@@ -17,6 +17,7 @@ public class Defect {
     private double longitude;
     private String photoPath;
     private long   createdAt;
+    private long   updatedAt;   // <-- ДОБАВЛЕНО
     private String createdBy;
 
     public Defect() {}
@@ -56,6 +57,10 @@ public class Defect {
 
     public long   getCreatedAt()             { return createdAt; }
     public void   setCreatedAt(long v)       { this.createdAt = v; }
+
+    // ДОБАВЛЕНО
+    public long   getUpdatedAt()             { return updatedAt; }
+    public void   setUpdatedAt(long v)       { this.updatedAt = v; }
 
     public String getCreatedBy()             { return createdBy; }
     public void   setCreatedBy(String v)     { this.createdBy = v; }
