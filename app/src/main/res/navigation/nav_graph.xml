@@ -6,6 +6,17 @@
     app:startDestination="@id/loginFragment">
 
     <!-- ══════════════════════════════════════════
+         ГЛОБАЛЬНОЕ ДЕЙСТВИЕ ДЛЯ ВЫХОДА
+         ══════════════════════════════════════════ -->
+    <action
+        android:id="@+id/action_global_logout"
+        app:destination="@id/loginFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out" />
+
+    <!-- ══════════════════════════════════════════
          ЭКРАН ВХОДА
          ══════════════════════════════════════════ -->
     <fragment
@@ -43,7 +54,6 @@
          ИНСПЕКТОР — 4 вкладки нижней панели
          ══════════════════════════════════════════ -->
 
-    <!-- FIX: добавлен action для FAB "Добавить дефект" с карты -->
     <fragment
         android:id="@+id/nav_map"
         android:name="com.example.e68.app.presentation.map.MapFragment"
@@ -92,15 +102,7 @@
         android:id="@+id/nav_profile"
         android:name="com.example.e68.app.presentation.profile.ProfileFragment"
         android:label="Профиль"
-        tools:layout="@layout/fragment_profile">
-        <action
-            android:id="@+id/action_profileFragment_to_loginFragment"
-            app:destination="@id/loginFragment"
-            app:popUpTo="@id/nav_graph"
-            app:popUpToInclusive="true"
-            app:enterAnim="@anim/fade_in"
-            app:exitAnim="@anim/fade_out" />
-    </fragment>
+        tools:layout="@layout/fragment_profile" />
 
     <!-- ══════════════════════════════════════════
          ИНСПЕКТОР — вторичные экраны (без панели)
@@ -166,15 +168,7 @@
         android:id="@+id/nav_manager_profile"
         android:name="com.example.e68.app.presentation.profile.ProfileFragment"
         android:label="Профиль"
-        tools:layout="@layout/fragment_profile">
-        <action
-            android:id="@+id/action_managerProfile_to_loginFragment"
-            app:destination="@id/loginFragment"
-            app:popUpTo="@id/nav_graph"
-            app:popUpToInclusive="true"
-            app:enterAnim="@anim/fade_in"
-            app:exitAnim="@anim/fade_out" />
-    </fragment>
+        tools:layout="@layout/fragment_profile" />
 
     <!-- ══════════════════════════════════════════
          АДМИНИСТРАТОР — 5 вкладок нижней панели
@@ -212,8 +206,6 @@
         android:label="Аналитика"
         tools:layout="@layout/fragment_analytics" />
 
-    <!-- FIX: AdminSettingsFragment — заменён на ProfileFragment как заглушка.
-         Создай AdminSettingsFragment когда будешь готов, тогда верни оригинальный класс. -->
     <fragment
         android:id="@+id/nav_admin_settings"
         android:name="com.example.e68.app.presentation.admin.AdminSettingsFragment"
@@ -224,14 +216,6 @@
         android:id="@+id/nav_admin_profile"
         android:name="com.example.e68.app.presentation.profile.ProfileFragment"
         android:label="Профиль"
-        tools:layout="@layout/fragment_profile">
-        <action
-            android:id="@+id/action_adminProfile_to_loginFragment"
-            app:destination="@id/loginFragment"
-            app:popUpTo="@id/nav_graph"
-            app:popUpToInclusive="true"
-            app:enterAnim="@anim/fade_in"
-            app:exitAnim="@anim/fade_out" />
-    </fragment>
+        tools:layout="@layout/fragment_profile" />
 
 </navigation>

@@ -182,4 +182,17 @@ dependencies {
 
     // GPS (FusedLocationProvider)
     implementation("com.google.android.gms:play-services-location:21.2.0")
+
+    implementation("com.itextpdf:itext7-core:7.2.5")
+// Этот модуль содержит недостающий класс PdfEncodings
+    implementation("com.itextpdf:io:7.2.5")
+// И явно укажите kernel для надежности
+    implementation("com.itextpdf:kernel:7.2.5")
+
+
+
+
+
+
 }
+

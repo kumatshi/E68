@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1068625545896",
+    "project_id": "roadpatrol-94b62",
+    "storage_bucket": "roadpatrol-94b62.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1068625545896:android:b6768cc6159b687475509d",
+        "android_client_info": {
+          "package_name": "com.example.e68.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVpS8uBOSfyiZwNEnd44juO_FMBNEVfFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

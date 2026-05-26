@@ -1,4 +1,3 @@
-// FILE: app/src/main/java/com/example/e68/app/presentation/profile/ProfileFragment.java
 package com.example.e68.app.presentation.profile;
 
 import android.app.AlertDialog;
@@ -18,6 +17,7 @@ import com.example.e68.app.domain.entity.User;
 import com.example.e68.app.presentation.common.BaseFragment;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import androidx.navigation.NavController;
 
 @AndroidEntryPoint
 public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
@@ -47,13 +47,29 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
         viewModel.getPatrolsCount().observe(getViewLifecycleOwner(),
                 n -> binding.tvStatPatrols.setText(String.valueOf(n)));
 
+        // ИСПРАВЛЕНО: Используем глобальное действие для выхода
         viewModel.getLogoutDone().observe(getViewLifecycleOwner(), done -> {
             if (Boolean.TRUE.equals(done)) {
-                // Переходим на логин, чистим весь стек
-                Navigation.findNavController(requireView())
-                        .navigate(R.id.action_profileFragment_to_loginFragment);
+                navigateToLogin();
             }
         });
+    }
+
+    /**
+     * Навигация на экран входа с использованием глобального действия.
+     * Это гарантирует, что весь стек навигации будет очищен.
+     */
+    private void navigateToLogin() {
+        try {
+            // Используем глобальное действие для выхода
+            Navigation.findNavController(requireView())
+                    .navigate(R.id.action_global_logout);
+        } catch (IllegalArgumentException e) {
+            // Fallback на случай, если глобальное действие недоступно
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.loginFragment);
+            navController.popBackStack(R.id.nav_graph, true);
+        }
     }
 
     private void bindUser(User user) {
@@ -153,7 +169,6 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
     }
 
     private int roleBadgeColor(String role) {
-        // Возвращаем нужный drawable в зависимости от роли
         if ("ADMIN".equals(role))    return R.drawable.bg_role_badge_admin;
         if ("MANAGER".equals(role)) return R.drawable.bg_role_badge_manager;
         return R.drawable.bg_role_badge; // INSPECTOR — оранжевый
