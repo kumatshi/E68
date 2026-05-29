@@ -4,23 +4,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@color/background">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/background"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/background"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:title="Дефект"
+            app:titleCentered="false"
             app:titleTextAppearance="?attr/textAppearanceTitleLarge" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Progress -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -28,10 +33,12 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
+    <!-- CONTENT -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/contentLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fillViewport="true"
         android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
@@ -39,343 +46,268 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:paddingBottom="80dp">
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:paddingTop="16dp"
+            android:paddingBottom="32dp">
 
-            <!-- ФОТО ДЕФЕКТА -->
+            <!-- PHOTO -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardPhoto"
                 android:layout_width="match_parent"
                 android:layout_height="220dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
                 android:layout_marginBottom="16dp"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
 
                 <ImageView
                     android:id="@+id/ivPhoto"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="Фото дефекта" />
+                    android:contentDescription="Фото дефекта"
+                    android:scaleType="centerCrop" />
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Заглушка если фото нет -->
+            <!-- NO PHOTO -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardNoPhoto"
                 android:layout_width="match_parent"
-                android:layout_height="80dp"
-                app:cardCornerRadius="12dp"
+                android:layout_height="88dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/surface"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#FFDDDDDD"
-                android:layout_marginBottom="16dp">
+                app:strokeColor="@color/divider"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
                     android:gravity="center"
-                    android:alpha="0.5">
+                    android:orientation="horizontal"
+                    android:padding="16dp">
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
+                        android:layout_marginEnd="8dp"
                         android:src="@drawable/ic_camera"
-                        app:tint="?attr/colorOnSurface"
-                        android:layout_marginEnd="8dp" />
+                        app:tint="@color/text_secondary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Фото не прикреплено"
-                        android:textAppearance="?attr/textAppearanceBodyMedium" />
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- СТАТУС + СЕРЬЁЗНОСТЬ -->
+            <!-- STATUS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_marginBottom="20dp"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/tvStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
-                    android:textSize="12sp"
+                    android:background="@drawable/bg_status_chip"
+                    android:paddingStart="14dp"
+                    android:paddingTop="6dp"
+                    android:paddingEnd="14dp"
+                    android:paddingBottom="6dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
-                <View android:layout_width="8dp" android:layout_height="1dp" />
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="1dp" />
 
                 <TextView
                     android:id="@+id/tvSeverity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="13sp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
             </LinearLayout>
 
-            <!-- НАЗВАНИЕ -->
+            <!-- TITLE -->
             <TextView
                 android:id="@+id/tvTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceHeadlineSmall"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="10dp"
+                android:textColor="@color/text_primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
-            <!-- ОПИСАНИЕ -->
+            <!-- DESCRIPTION -->
             <TextView
                 android:id="@+id/tvDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:alpha="0.75"
-                android:layout_marginBottom="20dp" />
+                android:layout_marginBottom="20dp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp" />
 
-            <!-- КАРТОЧКА: ТИП + МЕСТОПОЛОЖЕНИЕ -->
+            <!-- INFO CARD -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/surface"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#FFDDDDDD"
-                android:layout_marginBottom="12dp">
+                app:strokeColor="@color/divider"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="18dp">
 
-                    <!-- Тип -->
-                    <LinearLayout
+                    <!-- TYPE -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Тип дефекта"
+                        android:textColor="@color/text_hint"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvType"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingBottom="12dp">
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="16dp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_warning"
-                            app:tint="?attr/colorOnSurface"
-                            android:layout_marginEnd="12dp" />
+                    <!-- ADDRESS -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Адрес"
+                        android:textColor="@color/text_hint"
+                        android:textSize="13sp" />
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Тип дефекта"
-                                android:textAppearance="?attr/textAppearanceLabelSmall"
-                                android:alpha="0.6" />
-                            <TextView
-                                android:id="@+id/tvType"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="?attr/textAppearanceBodyMedium" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#FFDDDDDD"
-                        android:layout_marginBottom="12dp" />
-
-                    <!-- Адрес -->
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tvAddress"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingBottom="12dp">
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="16dp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp" />
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_location"
-                            app:tint="?attr/colorOnSurface"
-                            android:layout_marginEnd="12dp" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Адрес"
-                                android:textAppearance="?attr/textAppearanceLabelSmall"
-                                android:alpha="0.6" />
-                            <TextView
-                                android:id="@+id/tvAddress"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="?attr/textAppearanceBodyMedium" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- GPS координаты -->
+                    <!-- GPS -->
                     <LinearLayout
                         android:id="@+id/rowCoords"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
+                        android:orientation="vertical"
                         android:visibility="gone">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_gps"
-                            app:tint="?attr/colorPrimary"
-                            android:layout_marginEnd="12dp" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Координаты GPS"
-                                android:textAppearance="?attr/textAppearanceLabelSmall"
-                                android:alpha="0.6" />
-                            <TextView
-                                android:id="@+id/tvCoords"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="?attr/textAppearanceBodySmall"
-                                android:textColor="?attr/colorPrimary" />
-                        </LinearLayout>
+                            android:text="Координаты GPS"
+                            android:textColor="@color/text_hint"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvCoords"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="@color/primary"
+                            android:textSize="14sp" />
+
                     </LinearLayout>
 
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- КАРТОЧКА: КТО + КОГДА -->
+            <!-- AUTHOR CARD -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                android:layout_marginBottom="24dp"
+                app:cardBackgroundColor="@color/surface"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#FFDDDDDD"
-                android:layout_marginBottom="24dp">
+                app:strokeColor="@color/divider"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="18dp">
 
-                    <!-- Автор -->
-                    <LinearLayout
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Создал"
+                        android:textColor="@color/text_hint"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvCreatedBy"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingBottom="12dp">
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="16dp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp" />
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_person"
-                            app:tint="?attr/colorOnSurface"
-                            android:layout_marginEnd="12dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Дата создания"
+                        android:textColor="@color/text_hint"
+                        android:textSize="13sp" />
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Создал"
-                                android:textAppearance="?attr/textAppearanceLabelSmall"
-                                android:alpha="0.6" />
-                            <TextView
-                                android:id="@+id/tvCreatedBy"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="?attr/textAppearanceBodyMedium" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#FFDDDDDD"
-                        android:layout_marginBottom="12dp" />
-
-                    <!-- Дата -->
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tvCreatedAt"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_clock"
-                            app:tint="?attr/colorOnSurface"
-                            android:layout_marginEnd="12dp" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Дата создания"
-                                android:textAppearance="?attr/textAppearanceLabelSmall"
-                                android:alpha="0.6" />
-                            <TextView
-                                android:id="@+id/tvCreatedAt"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="?attr/textAppearanceBodyMedium" />
-                        </LinearLayout>
-                    </LinearLayout>
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp" />
 
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- КНОПКА СМЕНЫ СТАТУСА -->
+            <!-- BUTTON -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnChangeStatus"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/AppTheme.MobileButton"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="@dimen/button_height"
                 android:text="Изменить статус"
+                android:textSize="16sp"
                 app:icon="@drawable/ic_edit"
                 app:iconPadding="8dp" />
 
         </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

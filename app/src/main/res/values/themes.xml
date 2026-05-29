@@ -109,6 +109,28 @@
         <item name="colorSwitchThumbNormal">@color/text_hint</item>
         <item name="android:colorForeground">@color/text_hint</item>
     </style>
+    <!-- Базовый стиль кнопки для мобильных устройств -->
+    <style name="AppTheme.MobileButton" parent="Widget.Material3.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
 
+    <!-- Outline кнопка -->
+    <style name="AppTheme.MobileButton.Outline">
+        <item name="android:backgroundTint">@android:color/transparent</item>
+        <item name="android:strokeColor">?attr/colorPrimary</item>
+        <item name="android:strokeWidth">1</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Destructive кнопка (удаление) -->
+    <style name="AppTheme.MobileButton.Destructive">
+        <item name="android:backgroundTint">@color/defect_red</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
 
 </resources>

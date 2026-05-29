@@ -57,5 +57,7 @@
     <color name="selector_chip_stroke">#4A5568</color>
 
     <color name="error">#F44336</color>
+    <color name="defect_red">#D4183D</color>
+    <color name="status_chip_bg">#FF6B35</color>
 
 </resources>

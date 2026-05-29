@@ -1,7 +1,5 @@
 package com.example.e68.app.presentation.splash;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,18 +12,23 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.e68.app.presentation.MainActivity;
 import com.example.e68.app.R;
+import com.example.e68.app.data.session.SessionManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class SplashActivity extends AppCompatActivity {
+
+    @Inject
+    SessionManager sessionManager;
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
@@ -36,9 +39,10 @@ public class SplashActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView tvVersion;
 
-    private final long splashDelay = 2500L;
+    private final long splashDelay = 2000L; // Уменьшил до 2 секунд
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private long startTime;
+    private boolean isNavigating = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +55,8 @@ public class SplashActivity extends AppCompatActivity {
 
         initViews();
         startAnimations();
+
+        // Проверяем пользователя
         checkUserAndNavigate();
     }
 
@@ -61,7 +67,6 @@ public class SplashActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         tvVersion = findViewById(R.id.tvVersion);
 
-        // Устанавливаем версию приложения
         try {
             String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
             tvVersion.setText("v" + version);
@@ -73,15 +78,12 @@ public class SplashActivity extends AppCompatActivity {
     private void startAnimations() {
         startTime = System.currentTimeMillis();
 
-        // Анимация для логотипа
         Animation scaleFadeIn = AnimationUtils.loadAnimation(this, R.anim.splash_scale_fade_in);
         logoContainer.startAnimation(scaleFadeIn);
         logoContainer.setVisibility(View.VISIBLE);
 
-        // Запускаем Lottie анимацию
         lottieLogo.playAnimation();
 
-        // Анимация для текста с задержкой 800ms
         logoContainer.postDelayed(() -> {
             Animation slideUpFadeIn = AnimationUtils.loadAnimation(this, R.anim.splash_slide_up_fade_in);
             textContainer.startAnimation(slideUpFadeIn);
@@ -90,16 +92,28 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void checkUserAndNavigate() {
-        if (auth.getCurrentUser() == null) {
-            // Пользователь не авторизован → переходим на MainActivity (покажет LoginFragment)
+        Log.d("SplashActivity", "=== checkUserAndNavigate ===");
+        Log.d("SplashActivity", "sessionManager.isLoggedIn() = " + sessionManager.isLoggedIn());
+        Log.d("SplashActivity", "auth.getCurrentUser() = " + (auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : "null"));
+
+        // Проверяем сохранённую сессию
+        if (sessionManager.isLoggedIn() && auth.getCurrentUser() != null) {
+            String savedRole = sessionManager.getUserRole();
+            Log.d("SplashActivity", "✅ User already logged in with role: " + savedRole);
+            navigateToMain(savedRole);
+        }
+        else if (auth.getCurrentUser() != null) {
+            Log.d("SplashActivity", "Firebase user exists but no session, loading role");
+            loadUserRoleAndSaveSession(auth.getCurrentUser().getUid());
+        }
+        else {
+            Log.d("SplashActivity", "❌ No user, going to login");
             navigateToMain(null);
-        } else {
-            // Пользователь авторизован → загружаем роль из Firestore
-            loadUserRoleAndNavigate(auth.getCurrentUser().getUid());
         }
     }
 
-    private void loadUserRoleAndNavigate(String uid) {
+    private void loadUserRoleAndSaveSession(String uid) {
+        Log.d("SplashActivity", "loadUserRoleAndSaveSession for uid: " + uid);
         showProgress(true);
 
         firestore.collection("users").document(uid)
@@ -109,36 +123,38 @@ public class SplashActivity extends AppCompatActivity {
                     if (role == null || role.isEmpty()) {
                         role = "INSPECTOR";
                     }
+                    Log.d("SplashActivity", "Saving session: uid=" + uid + ", role=" + role);
+                    sessionManager.saveLoginSession(uid, role);
                     navigateToMain(role);
                 })
                 .addOnFailureListener(e -> {
-                    // При ошибке отправляем инспектора по умолчанию
+                    Log.e("SplashActivity", "Failed to load role", e);
+                    sessionManager.saveLoginSession(uid, "INSPECTOR");
                     navigateToMain("INSPECTOR");
                 });
     }
 
     private void navigateToMain(String role) {
-        // Ждём окончания анимации (минимум splashDelay)
+        if (isNavigating) {
+            Log.d("SplashActivity", "Already navigating, skipping");
+            return;
+        }
+        isNavigating = true;
+
         long elapsedTime = System.currentTimeMillis() - startTime;
         long remainingDelay = Math.max(0, splashDelay - elapsedTime);
 
+        Log.d("SplashActivity", "navigateToMain called with role: " + role + ", delay: " + remainingDelay + "ms");
+
         mainHandler.postDelayed(() -> {
+            Log.d("SplashActivity", "Starting MainActivity with role: " + role);
             Intent intent = new Intent(SplashActivity.this, MainActivity.class);
             if (role != null) {
                 intent.putExtra("USER_ROLE", role);
             }
-            // В Activity, перед запуском новой
-            try {
-                startActivity(intent);
-                // Если overridePendingTransition вызывается где-то в другом месте, закомментируйте его
-            } catch (Exception e) {
-                // Логируем ошибку, но не даем приложению упасть
-                Log.e("AnimationError", "Failed to start activity", e);
-                // Пробуем запустить без анимации
-                startActivity(intent);
-            }
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
             finish();
-            overridePendingTransition(R.anim.splash_fade_in, android.R.anim.fade_out);
         }, remainingDelay);
     }
 

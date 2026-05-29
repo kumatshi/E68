@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.util.Log;
 import android.view.ViewGroup;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -43,6 +44,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
     /** Запрос разрешений: камера + геолокация */
     private final ActivityResultLauncher<String[]> permissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                if (!isAdded() || binding == null) return;
+
                 boolean camera = Boolean.TRUE.equals(result.get(Manifest.permission.CAMERA));
                 boolean loc    = Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_FINE_LOCATION));
                 if (camera) launchCamera();
@@ -52,6 +55,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
     /** Камера — возвращает true если фото сделано */
     private final ActivityResultLauncher<Uri> cameraLauncher =
             registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+                if (!isAdded() || binding == null) return;
+
                 if (Boolean.TRUE.equals(success) && pendingPhotoUri != null) {
                     viewModel.setPhotoUri(pendingPhotoUri);
                 } else {
@@ -88,6 +93,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
     private void setupCategoryChips() {
         // Чипы уже в XML — просто слушаем выбор
         binding.chipGroupCategory.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (binding == null) return;
+
             if (checkedIds.isEmpty()) {
                 viewModel.setCategory(null);
                 return;
@@ -101,6 +108,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
         // ── Кнопка "Сделать фото" ─────────────────────────────────
         binding.btnTakePhoto.setOnClickListener(v -> {
+            if (binding == null) return;
+
             if (hasCameraPermission()) {
                 launchCamera();
             } else {
@@ -112,10 +121,15 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
         });
 
         // ── Кнопка обновления GPS ─────────────────────────────────
-        binding.btnRefreshGps.setOnClickListener(v -> fetchLocation());
+        binding.btnRefreshGps.setOnClickListener(v -> {
+            if (binding == null) return;
+            fetchLocation();
+        });
 
         // ── Кнопка "Отправить отчёт" ──────────────────────────────
         binding.btnSendReport.setOnClickListener(v -> {
+            if (binding == null) return;
+
             if (validate()) {
                 viewModel.submitReport();
             }
@@ -123,6 +137,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
         // ── Сброс (повторная съёмка) ──────────────────────────────
         binding.btnRetakePhoto.setOnClickListener(v -> {
+            if (binding == null) return;
+
             viewModel.clearPhoto();
             pendingPhotoUri = null;
         });
@@ -131,6 +147,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
     // ── Camera ────────────────────────────────────────────────────
 
     private void launchCamera() {
+        if (binding == null) return;
+
         // Создаём запись в MediaStore чтобы получить Uri до съёмки
         ContentValues cv = new ContentValues();
         cv.put(MediaStore.Images.Media.DISPLAY_NAME, "defect_" + System.currentTimeMillis() + ".jpg");
@@ -147,6 +165,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
     // ── Location ──────────────────────────────────────────────────
 
     private void autoFetchLocation() {
+        if (binding == null) return;
+
         if (hasLocationPermission()) {
             fetchLocation();
         } else {
@@ -159,13 +179,17 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
     @SuppressLint("MissingPermission")
     private void fetchLocation() {
-        if (!hasLocationPermission()) return;
+        // ★★★★★ ПРОВЕРКА НА NULL В САМОМ НАЧАЛЕ ★★★★★
+        if (!hasLocationPermission() || binding == null) return;
 
         binding.tvGpsStatus.setText("Определяем местоположение…");
         binding.progressGps.setVisibility(View.VISIBLE);
 
         fusedLocation.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(location -> {
+                    // ★★★★★ ПРОВЕРКА В КОЛБЭКЕ ★★★★★
+                    if (binding == null) return;
+
                     binding.progressGps.setVisibility(View.GONE);
                     if (location != null) {
                         viewModel.setLocation(location);
@@ -175,6 +199,9 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
                     }
                 })
                 .addOnFailureListener(e -> {
+                    // ★★★★★ ПРОВЕРКА В КОЛБЭКЕ ★★★★★
+                    if (binding == null) return;
+
                     binding.progressGps.setVisibility(View.GONE);
                     binding.tvGpsStatus.setText("GPS недоступен");
                 });
@@ -182,8 +209,14 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
     @SuppressLint("MissingPermission")
     private void fetchLastKnownLocation() {
+        // ★★★★★ ПРОВЕРКА НА NULL ★★★★★
+        if (binding == null) return;
+
         fusedLocation.getLastLocation()
                 .addOnSuccessListener(location -> {
+                    // ★★★★★ ПРОВЕРКА В КОЛБЭКЕ ★★★★★
+                    if (binding == null) return;
+
                     if (location != null) {
                         viewModel.setLocation(location);
                     } else {
@@ -195,6 +228,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
     // ── Validation ────────────────────────────────────────────────
 
     private boolean validate() {
+        if (binding == null) return false;
+
         boolean ok = true;
 
         if (viewModel.getPhotoUri().getValue() == null) {
@@ -223,6 +258,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
         // Фото
         viewModel.getPhotoUri().observe(getViewLifecycleOwner(), uri -> {
+            if (binding == null) return;
+
             if (uri != null) {
                 binding.ivPhotoPreview.setImageURI(uri);
                 binding.ivPhotoPreview.setVisibility(View.VISIBLE);
@@ -239,6 +276,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
         // Геолокация
         viewModel.getLocation().observe(getViewLifecycleOwner(), location -> {
+            if (binding == null) return;
+
             if (location != null) {
                 String coords = String.format("%.6f, %.6f  (±%.0fm)",
                         location.getLatitude(),
@@ -251,6 +290,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
         // Адрес (обратное геокодирование из ViewModel)
         viewModel.getAddress().observe(getViewLifecycleOwner(), address -> {
+            if (binding == null) return;
+
             if (address != null && !address.isEmpty()) {
                 binding.tvAddress.setText(address);
                 binding.tvAddress.setVisibility(View.VISIBLE);
@@ -259,6 +300,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
         // Загрузка / отправка
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            if (binding == null) return;
+
             binding.btnSendReport.setEnabled(!loading);
             binding.progressSend.setVisibility(loading ? View.VISIBLE : View.GONE);
             binding.btnSendReport.setText(loading ? "Отправляем…" : "Отправить отчёт");
@@ -266,6 +309,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
         // Успех
         viewModel.getSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (binding == null) return;
+
             if (Boolean.TRUE.equals(success)) {
                 showToast("Дефект зафиксирован!");
                 viewModel.reset();
@@ -275,6 +320,8 @@ public class PhotoReportFragment extends BaseFragment<FragmentPhotoReportBinding
 
         // Ошибка
         viewModel.getError().observe(getViewLifecycleOwner(), err -> {
+            if (binding == null) return;
+
             if (err != null) showToast(err);
         });
     }

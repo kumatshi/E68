@@ -26,6 +26,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.e68.app.R;
 import com.example.e68.app.databinding.ActivityMainBinding;
 import com.example.e68.app.data.repository.UserRepositoryImpl;
+import com.example.e68.app.data.session.SessionManager;
 import com.example.e68.app.domain.entity.User;
 
 import java.util.Arrays;
@@ -41,20 +42,20 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    // Константы для запроса разрешений
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final int MANAGE_STORAGE_REQUEST_CODE = 101;
 
     @Inject
-    UserRepositoryImpl userRepository;  // Инжектим репозиторий пользователей
+    UserRepositoryImpl userRepository;
+
+    @Inject
+    SessionManager sessionManager; // ДОБАВЛЕНО
 
     private ActivityMainBinding binding;
     private NavController navController;
 
-    // Храним роль текущего пользователя
-    private String currentUserRole = "INSPECTOR"; // По умолчанию инспектор
+    private String currentUserRole = "INSPECTOR";
 
-    // Экраны где нижняя панель СКРЫТА
     private static final Set<Integer> HIDE_NAV = new HashSet<>(Arrays.asList(
             R.id.loginFragment,
             R.id.createDefectFragment,
@@ -67,31 +68,44 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Получаем роль из SplashActivity
+        // ★★★ ВАЖНО: Сначала получаем роль из Intent или SessionManager ★★★
         String role = getIntent().getStringExtra("USER_ROLE");
-        if (role != null && !role.isEmpty()) {
-            currentUserRole = role;
-            applyRoleMenu(role);
-            setStartDestinationBasedOnRole();
+
+        // Если роль не передана в Intent, берём из SessionManager
+        if ((role == null || role.isEmpty()) && sessionManager != null) {
+            role = sessionManager.getUserRole();
+            Log.d(TAG, "Role loaded from SessionManager: " + role);
         }
 
+        // Если роль всё ещё null, используем INSPECTOR
+        if (role == null || role.isEmpty()) {
+            role = "INSPECTOR";
+        }
+
+        Log.d(TAG, "Final user role: " + role);
+        currentUserRole = role;
+        applyRoleMenu(role);
+
+        // Устанавливаем startDestination ПОСЛЕ применения меню
         setupNavController();
+
+        // Принудительно устанавливаем startDestination для роли
+        setStartDestination(getProfileDestinationForRole(role));
+
         observeCurrentUser();
+
+        // Запрашиваем разрешения на хранение
+        checkAndRequestStoragePermissions();
     }
 
-    /**
-     * Проверяет и запрашивает разрешения на запись в хранилище
-     */
     private void checkAndRequestStoragePermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Android 11+ (API 30+) - нужен доступ ко всем файлам
             if (!Environment.isExternalStorageManager()) {
                 requestManageStoragePermission();
             } else {
                 Log.d(TAG, "MANAGE_EXTERNAL_STORAGE permission already granted");
             }
         } else {
-            // Android 10 и ниже - классические разрешения
             String[] permissions = {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.READ_EXTERNAL_STORAGE
@@ -114,9 +128,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Запрашивает разрешение на управление хранилищем для Android 11+
-     */
     private void requestManageStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
@@ -126,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Requesting MANAGE_EXTERNAL_STORAGE permission");
             } catch (Exception e) {
                 Log.e(TAG, "Error requesting storage permission: " + e.getMessage());
-                // Fallback - показываем сообщение пользователю
                 Toast.makeText(this,
                         "Для сохранения отчётов в папку Загрузки нужно разрешение.\n" +
                                 "Откройте Настройки → Приложения → E68 → Разрешения → Файлы и медиа → Разрешить",
@@ -184,10 +194,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Проверяет, есть ли разрешение на запись в хранилище
-     * Можно использовать в ReportGenerator
-     */
     public boolean hasStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return Environment.isExternalStorageManager();
@@ -197,9 +203,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Наблюдаем за текущим пользователем, чтобы обновлять роль
-     */
     private void observeCurrentUser() {
         userRepository.getCurrentUser().observe(this, user -> {
             if (user != null) {
@@ -207,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!role.equals(currentUserRole)) {
                     currentUserRole = role;
                     applyRoleMenu(role);
-                    setStartDestinationBasedOnRole();
+                    setStartDestination(getProfileDestinationForRole(role));
                 }
             }
         });
@@ -222,34 +225,22 @@ public class MainActivity extends AppCompatActivity {
         }
         navController = host.getNavController();
 
-        // Устанавливаем startDestination в зависимости от роли
-        setStartDestinationBasedOnRole();
-
         // Показываем/скрываем нижнюю панель
         navController.addOnDestinationChangedListener((ctrl, dest, args) -> {
             boolean hide = HIDE_NAV.contains(dest.getId());
             binding.bottomNavigation.setVisibility(hide ? View.GONE : View.VISIBLE);
         });
 
-        // Тапы по вкладкам — ВРУЧНУЮ без NavigationUI
         binding.bottomNavigation.setOnItemSelectedListener(item -> safeNavigateTo(item.getItemId()));
-
-        // Повторный тап на активной вкладке — ничего не делать
         binding.bottomNavigation.setOnItemReselectedListener(item -> { /* no-op */ });
     }
 
-    /**
-     * Устанавливает startDestination в зависимости от роли
-     */
     private void setStartDestinationBasedOnRole() {
         int startDestId = getProfileDestinationForRole(currentUserRole);
         Log.d(TAG, "Setting startDestination for role " + currentUserRole + " to: " + startDestId);
         setStartDestination(startDestId);
     }
 
-    /**
-     * Возвращает строку роли пользователя
-     */
     private String getRoleString(User user) {
         if (user == null) return "INSPECTOR";
         String role = user.getRole();
@@ -265,28 +256,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Возвращает ID фрагмента профиля для конкретной роли
-     * ПРОФИЛЬ - первый экран после входа!
-     */
     private int getProfileDestinationForRole(String role) {
         if (role == null) return R.id.nav_profile;
 
         switch (role) {
             case "ADMIN":
-                return R.id.nav_admin_profile;    // Профиль администратора
+                return R.id.nav_admin_profile;
             case "MANAGER":
-                return R.id.nav_manager_profile;  // Профиль менеджера
+                return R.id.nav_manager_profile;
             default:
-                return R.id.nav_profile;           // Профиль инспектора
+                return R.id.nav_profile;
         }
     }
 
-    /**
-     * Устанавливает новый startDestination в графе навигации
-     */
     private void setStartDestination(int startDestId) {
-        if (navController == null) return;
+        if (navController == null) {
+            Log.e(TAG, "navController is null, cannot set start destination");
+            return;
+        }
 
         NavGraph navGraph = navController.getGraph();
         int currentStartDest = navGraph.getStartDestination();
@@ -298,11 +285,14 @@ public class MainActivity extends AppCompatActivity {
 
         navGraph.setStartDestination(startDestId);
         Log.d(TAG, "Start destination changed from " + currentStartDest + " to " + startDestId);
+
+        // Если текущий фрагмент - старый startDestination, переходим на новый
+        NavDestination current = navController.getCurrentDestination();
+        if (current != null && current.getId() == currentStartDest) {
+            navController.navigate(startDestId);
+        }
     }
 
-    /**
-     * Безопасный navigate(): не крашится, не дублирует back stack.
-     */
     private boolean safeNavigateTo(int destId) {
         if (navController == null) return false;
 
@@ -325,12 +315,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Устанавливает нижнее меню по роли
-     */
     public void applyRoleMenu(String role) {
         if (role == null) role = "INSPECTOR";
-        currentUserRole = role; // Сохраняем роль
+        currentUserRole = role;
         int menuRes;
         switch (role.toUpperCase()) {
             case "MANAGER":
@@ -348,11 +335,15 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Menu applied for role: " + role);
     }
 
-    /**
-     * Обновляет навигацию после входа
-     */
     public void refreshNavigationAfterLogin() {
         Log.d(TAG, "Refreshing navigation after login");
+        if (sessionManager != null) {
+            String role = sessionManager.getUserRole();
+            if (role != null) {
+                currentUserRole = role;
+                applyRoleMenu(role);
+            }
+        }
         setStartDestinationBasedOnRole();
     }
 

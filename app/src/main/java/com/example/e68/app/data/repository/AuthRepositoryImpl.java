@@ -52,21 +52,18 @@ public class AuthRepositoryImpl {
                         Map<String, Object> data = doc.getData();
                         Log.d(TAG, "Firestore doc found: " + data);
 
-                        // Читаем с trim ключей — на случай если в Firestore
-                        // поля сохранены с пробелами ("name   " вместо "name")
                         User user = new User();
-                        user.setUid(uid);
+                        user.setUid(uid); // ВАЖНО: устанавливаем uid!
                         user.setName(getStrTrimKey(data, "name"));
                         user.setEmail(getStrTrimKey(data, "email"));
                         user.setRole(getStrTrimKey(data, "role"));
                         user.setDepartment(getStrTrimKey(data, "department"));
 
-                        // isActive может быть "isActive" или "active"
                         Object activeVal = getValueTrimKey(data, "isActive");
                         if (activeVal == null) activeVal = getValueTrimKey(data, "active");
                         user.setActive(Boolean.TRUE.equals(activeVal));
 
-                        Log.d(TAG, "User loaded: name=" + user.getName()
+                        Log.d(TAG, "User loaded: uid=" + user.getUid() + ", name=" + user.getName()
                                 + ", role=" + user.getRole()
                                 + ", active=" + user.isActive());
 
@@ -103,7 +100,7 @@ public class AuthRepositoryImpl {
                     Log.d(TAG, "Создан дефолтный документ для uid=" + uid);
 
                     User user = new User();
-                    user.setUid(uid);
+                    user.setUid(uid); // ВАЖНО: устанавливаем uid!
                     user.setName(extractNameFromEmail(email));
                     user.setEmail(email);
                     user.setRole("INSPECTOR");
@@ -116,7 +113,7 @@ public class AuthRepositoryImpl {
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Не удалось создать документ: " + e.getMessage());
                     User user = new User();
-                    user.setUid(uid);
+                    user.setUid(uid); // ВАЖНО: устанавливаем uid!
                     user.setEmail(email);
                     user.setRole("INSPECTOR");
                     user.setActive(true);
@@ -136,15 +133,9 @@ public class AuthRepositoryImpl {
 
     // ── Хелперы ──────────────────────────────────────────────────────
 
-    /**
-     * Ищет значение в Map по ключу с учётом пробелов.
-     * Сначала точное совпадение, потом поиск по trim всех ключей.
-     */
     private Object getValueTrimKey(Map<String, Object> map, String key) {
         if (map == null || key == null) return null;
-        // Точное совпадение
         if (map.containsKey(key)) return map.get(key);
-        // Поиск с trim — на случай "name   " в Firestore
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             if (key.equals(entry.getKey().trim())) {
                 return entry.getValue();
