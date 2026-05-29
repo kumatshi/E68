@@ -21,7 +21,6 @@
         android:paddingEnd="12dp"
         android:paddingTop="12dp">
 
-        <!-- Строка поиска -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -37,7 +36,6 @@
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp">
 
-                <!-- Кнопка поиска (лупа) -->
                 <ImageButton
                     android:id="@+id/btnSearch"
                     android:layout_width="40dp"
@@ -47,7 +45,6 @@
                     android:padding="8dp"
                     app:tint="@color/text_secondary" />
 
-                <!-- Поле ввода -->
                 <EditText
                     android:id="@+id/etSearch"
                     android:layout_width="0dp"
@@ -64,7 +61,6 @@
                     android:paddingStart="4dp"
                     android:paddingEnd="4dp" />
 
-                <!-- Кнопка сброса -->
                 <ImageButton
                     android:id="@+id/btnSearchClear"
                     android:layout_width="36dp"
@@ -78,7 +74,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Прогресс под поисковой строкой -->
         <ProgressBar
             android:id="@+id/progressSearch"
             android:layout_width="match_parent"
@@ -88,7 +83,6 @@
             android:visibility="gone"
             android:layout_marginTop="2dp" />
 
-        <!-- Список саджестов -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -165,6 +159,90 @@
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
+    <!-- ════════════════ КНОПКА ГЕОЛОКАЦИИ (ПРАВО-НИЗКИЙ УГОЛ) ═══ -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/btnMyLocation"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="148dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@color/surface">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_my_location"
+            app:tint="?attr/colorPrimary" />
+
+    </com.google.android.material.card.MaterialCardView>
+    <!-- ════════════ КНОПКА ОСТАНОВКИ ОТСЛЕЖИВАНИЯ ════════════════ -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/btnStopTracking"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="204dp"
+        android:visibility="gone"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@color/surface">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_close"
+            app:tint="@color/error" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ════════════ ИНДИКАТОР ОТСЛЕЖИВАНИЯ ══════════════════════ -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardTrackingIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="148dp"
+        android:visibility="gone"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/surface">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
+
+            <!-- Пульсирующая точка -->
+            <View
+                android:id="@+id/viewTrackingDot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/user_location_marker"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/tvTrackingLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Отслеживание"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
     <!-- ════════════════ КАРТОЧКА ДЕФЕКТА (BOTTOM) ═════════════ -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardDefectPreview"
@@ -185,7 +263,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Шапка: заголовок + закрыть -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -223,7 +300,6 @@
                 android:maxLines="2"
                 android:ellipsize="end" />
 
-            <!-- Бейджи severity + status -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

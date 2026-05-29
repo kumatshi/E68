@@ -1,8 +1,10 @@
 package com.example.e68.app.presentation.map;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.Typeface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,8 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,6 +31,9 @@ import com.example.e68.app.R;
 import com.example.e68.app.databinding.FragmentMapBinding;
 import com.example.e68.app.domain.entity.Defect;
 import com.example.e68.app.presentation.common.BaseFragment;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.yandex.mapkit.Animation;
 import com.yandex.mapkit.MapKitFactory;
@@ -48,6 +56,13 @@ import com.yandex.runtime.ui_view.ViewProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.view.animation.LinearInterpolator;
+
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -55,7 +70,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class MapFragment extends BaseFragment<FragmentMapBinding> {
 
     private static final double CLUSTER_RADIUS   = 60.0;
-    private static final int    CLUSTER_MIN_ZOOM = 20; // увеличено — кластеры не пропадают
+    // Integer.MAX_VALUE — кластеры видны на любом уровне приближения
+    private static final int    CLUSTER_MIN_ZOOM = Integer.MAX_VALUE;
 
     private MapViewModel viewModel;
 
@@ -68,6 +84,24 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
 
     // ── Адаптер саджестов ─────────────────────────────────────────
     private SuggestAdapter suggestAdapter;
+
+    // ── Геолокация ────────────────────────────────────────────────
+    private FusedLocationProviderClient fusedLocationClient;
+    private PlacemarkMapObject userLocationMarker;
+    private LocationCallback   locationCallback;
+    private boolean            isTrackingLocation = false;
+    private ValueAnimator      trackingDotAnimator;
+
+    private final ActivityResultLauncher<String> locationPermissionLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.RequestPermission(),
+                    granted -> {
+                        if (granted) {
+                            moveToMyLocation();
+                        } else {
+                            showToast("Разрешение на геолокацию не выдано");
+                        }
+                    });
 
     // ── Camera listener ───────────────────────────────────────────
     private final CameraListener cameraListener = (map, pos, reason, finished) -> {
@@ -121,10 +155,12 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(MapViewModel.class);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         setupMap();
         setupSearch();
         setupFilterChips();
+        setupMyLocationButton();
         observeDefects();
         observeSelectedDefect();
         observeSearch();
@@ -134,17 +170,43 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
         super.onStart();
         MapKitFactory.getInstance().onStart();
         binding.mapView.onStart();
+
+        // Возобновить отслеживание, если было активно до ухода в фон
+        if (isTrackingLocation) {
+            isTrackingLocation = false; // сбросим флаг, startLocationTracking проверит
+            startLocationTracking();
+        }
     }
 
     @Override public void onStop() {
+        // Останавливаем обновления (экономия батареи), но флаг isTrackingLocation
+        // оставляем true — чтобы onStart() знал, что надо возобновить
+        if (isTrackingLocation && locationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+            locationCallback = null;
+            // isTrackingLocation намеренно НЕ сбрасываем
+        }
         binding.mapView.onStop();
         MapKitFactory.getInstance().onStop();
         super.onStop();
     }
 
     @Override public void onDestroyView() {
-        super.onDestroyView();
+        // Полная остановка + очистка маркера
+        if (locationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+            locationCallback = null;
+        }
+        isTrackingLocation = false;
+
+        if (trackingDotAnimator != null) {
+            trackingDotAnimator.cancel();
+            trackingDotAnimator = null;
+        }
+
+        userLocationMarker = null; // коллекция удалится вместе с mapView
         tapListeners.clear();
+        super.onDestroyView();
     }
 
     // ── Map setup ─────────────────────────────────────────────────
@@ -163,6 +225,149 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
         searchResultCollection = binding.mapView.getMap()
                 .getMapObjects()
                 .addCollection();
+    }
+
+    // ── My Location ───────────────────────────────────────────────
+
+    private void setupMyLocationButton() {
+        binding.btnMyLocation.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                moveToMyLocation();
+            } else {
+                locationPermissionLauncher.launch(
+                        Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+        });
+
+        binding.btnStopTracking.setOnClickListener(v -> stopLocationTracking());
+    }
+
+    private void moveToMyLocation() {
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) return;
+
+        fusedLocationClient
+                .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                .addOnSuccessListener(location -> {
+                    if (location == null) {
+                        showToast("Не удалось определить местоположение");
+                        return;
+                    }
+                    Point myPoint = new Point(location.getLatitude(), location.getLongitude());
+
+                    // Центрируем камеру (как раньше)
+                    binding.mapView.getMap().move(
+                            new CameraPosition(myPoint, 16f, 0f, 0f),
+                            new Animation(Animation.Type.SMOOTH, 0.5f),
+                            null);
+
+                    // Создаём/обновляем маркер сразу при нажатии
+                    updateUserLocationMarker(myPoint);
+
+                    // Запускаем реалтайм-отслеживание (если ещё не запущено)
+                    if (!isTrackingLocation) {
+                        startLocationTracking();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        showToast("Ошибка геолокации: " + e.getMessage()));
+    }
+
+// ── Маркер пользователя ───────────────────────────────────────
+
+    /**
+     * Создаёт маркер при первом вызове, затем только обновляет координаты.
+     * Не трогает defectClusterCollection и searchResultCollection.
+     */
+    private void updateUserLocationMarker(Point point) {
+        if (userLocationMarker == null) {
+            // Создаём маркер в отдельной коллекции (поверх всего)
+            MapObjectCollection userLocationCollection = binding.mapView.getMap()
+                    .getMapObjects()
+                    .addCollection();
+
+            userLocationMarker = userLocationCollection.addPlacemark();
+            userLocationMarker.setIcon(
+                    ImageProvider.fromResource(requireContext(), R.drawable.user_location_marker),
+                    new IconStyle()
+                            .setAnchor(new PointF(0.5f, 0.5f))
+                            .setScale(1.2f)
+                            .setZIndex(200f));
+        }
+        userLocationMarker.setGeometry(point);
+    }
+
+// ── Отслеживание в реальном времени ──────────────────────────
+
+    private void startLocationTracking() {
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) return;
+
+        if (isTrackingLocation) return; // уже запущено
+
+        LocationRequest locationRequest = new LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY, 2000L) // интервал 2 сек
+                .setMinUpdateIntervalMillis(1000L)       // минимум 1 сек
+                .setMinUpdateDistanceMeters(1f)          // минимум 1 метр
+                .build();
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult result) {
+                android.location.Location loc = result.getLastLocation();
+                if (loc == null) return;
+                Point newPoint = new Point(loc.getLatitude(), loc.getLongitude());
+                updateUserLocationMarker(newPoint);
+            }
+        };
+
+        fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                android.os.Looper.getMainLooper());
+
+        isTrackingLocation = true;
+        showTrackingIndicator();
+    }
+
+    private void stopLocationTracking() {
+        if (!isTrackingLocation || locationCallback == null) return;
+
+        fusedLocationClient.removeLocationUpdates(locationCallback);
+        locationCallback    = null;
+        isTrackingLocation  = false;
+
+        hideTrackingIndicator();
+    }
+
+// ── UI: индикатор отслеживания ────────────────────────────────
+
+    private void showTrackingIndicator() {
+        binding.cardTrackingIndicator.setVisibility(View.VISIBLE);
+        binding.btnStopTracking.setVisibility(View.VISIBLE);
+
+        // Пульсация точки (alpha 1.0 → 0.3 → 1.0, бесконечно)
+        trackingDotAnimator = ObjectAnimator.ofFloat(
+                binding.viewTrackingDot, "alpha", 1f, 0.3f);
+        trackingDotAnimator.setDuration(900);
+        trackingDotAnimator.setRepeatMode(ValueAnimator.REVERSE);
+        trackingDotAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        trackingDotAnimator.setInterpolator(new LinearInterpolator());
+        trackingDotAnimator.start();
+    }
+
+    private void hideTrackingIndicator() {
+        binding.cardTrackingIndicator.setVisibility(View.GONE);
+        binding.btnStopTracking.setVisibility(View.GONE);
+
+        if (trackingDotAnimator != null) {
+            trackingDotAnimator.cancel();
+            trackingDotAnimator = null;
+        }
     }
 
     // ── Search setup ──────────────────────────────────────────────
@@ -388,7 +593,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
         container.setOrientation(LinearLayout.VERTICAL);
         container.setPadding(dp16, dp16, dp16, dp16);
 
-        // Заголовок
         TextView header = new TextView(requireContext());
         header.setText("Дефекты в кластере (" + defects.size() + ")");
         header.setTextSize(16f);
@@ -400,11 +604,9 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
         header.setLayoutParams(headerParams);
         container.addView(header);
 
-        // Разделитель под заголовком
         container.addView(makeDivider(dp1, 0xFF_DDDDDD));
 
         for (Defect defect : defects) {
-            // Строка дефекта
             LinearLayout row = new LinearLayout(requireContext());
             row.setOrientation(LinearLayout.VERTICAL);
             row.setPadding(0, dp12, 0, dp12);
@@ -412,14 +614,12 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
             row.setFocusable(true);
             row.setBackground(getRowRipple());
 
-            // Название
             TextView tvTitle = new TextView(requireContext());
             tvTitle.setText(defect.getTitle() != null ? defect.getTitle() : "Без названия");
             tvTitle.setTextSize(14f);
             tvTitle.setTypeface(null, Typeface.BOLD);
             row.addView(tvTitle);
 
-            // Адрес
             TextView tvAddress = new TextView(requireContext());
             tvAddress.setText(defect.getAddress() != null ? defect.getAddress() : "Адрес не указан");
             tvAddress.setTextSize(12f);
@@ -431,7 +631,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
             tvAddress.setLayoutParams(addrParams);
             row.addView(tvAddress);
 
-            // Severity badge
             String severity = defect.getSeverity() != null ? defect.getSeverity() : "MEDIUM";
             TextView tvSeverity = new TextView(requireContext());
             tvSeverity.setText(severity);
@@ -459,12 +658,11 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
 
         ScrollView scrollView = new ScrollView(requireContext());
         scrollView.addView(container);
-
         dialog.setContentView(scrollView);
         dialog.show();
     }
 
-    // ── Bottom Sheet — дефект (одиночный маркер) ──────────────────
+    // ── Bottom Sheet — дефект ─────────────────────────────────────
 
     private void showDefectBottomSheet(Defect defect) {
         hideSearchBottomSheet();
@@ -496,10 +694,8 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> {
     private void showSearchBottomSheet(SearchResultItem item) {
         hideDefectBottomSheet();
         binding.cardSearchPreview.setVisibility(View.VISIBLE);
-
         binding.tvSearchResultTitle.setText(item.getTitle());
         binding.tvSearchResultSubtitle.setText(item.getSubtitle());
-
         binding.btnCloseSearchPreview.setOnClickListener(v -> hideSearchBottomSheet());
     }
 

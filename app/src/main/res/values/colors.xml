@@ -56,4 +56,6 @@
     <color name="selector_chip_bg">#2D3449</color>
     <color name="selector_chip_stroke">#4A5568</color>
 
+    <color name="error">#F44336</color>
+
 </resources>
