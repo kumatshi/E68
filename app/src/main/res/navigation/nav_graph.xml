@@ -35,7 +35,7 @@
 
         <action
             android:id="@+id/action_loginFragment_to_managerFragment"
-            app:destination="@id/managerFragment"
+            app:destination="@id/nav_manager_defects"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true"
             app:enterAnim="@anim/slide_in_right"
@@ -43,7 +43,7 @@
 
         <action
             android:id="@+id/action_loginFragment_to_adminFragment"
-            app:destination="@id/adminFragment"
+            app:destination="@id/nav_admin_users"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true"
             app:enterAnim="@anim/slide_in_right"
@@ -90,6 +90,13 @@
             app:destination="@id/createDefectFragment"
             app:enterAnim="@anim/slide_in_up"
             app:popExitAnim="@anim/slide_out_down" />
+        <action
+            android:id="@+id/action_defectsList_to_editDefect"
+            app:destination="@id/editDefectFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right">
+            <argument android:name="defectId" app:argType="long" />
+        </action>
     </fragment>
 
     <fragment
@@ -114,6 +121,13 @@
         android:label="Детали дефекта"
         tools:layout="@layout/fragment_defect_detail">
         <argument android:name="defectId" app:argType="long" />
+        <action
+            android:id="@+id/action_defectDetail_to_editDefect"
+            app:destination="@id/editDefectFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right">
+            <argument android:name="defectId" app:argType="long" />
+        </action>
     </fragment>
 
     <fragment
@@ -122,21 +136,19 @@
         android:label="@string/create_defect"
         tools:layout="@layout/fragment_create_defect" />
 
+    <fragment
+        android:id="@+id/editDefectFragment"
+        android:name="com.example.e68.app.presentation.defects.EditDefectFragment"
+        android:label="Редактирование дефекта"
+        tools:layout="@layout/fragment_edit_defect">
+        <argument
+            android:name="defectId"
+            app:argType="long" />
+    </fragment>
+
     <!-- ══════════════════════════════════════════
-         МЕНЕДЖЕР — 5 вкладок нижней панели
+         МЕНЕДЖЕР — вкладки нижней панели (БЕЗ КАРТЫ)
          ══════════════════════════════════════════ -->
-
-    <fragment
-        android:id="@+id/managerFragment"
-        android:name="com.example.e68.app.presentation.manager.ManagerFragment"
-        android:label="Карта"
-        tools:layout="@layout/fragment_manager_map" />
-
-    <fragment
-        android:id="@+id/nav_manager_map"
-        android:name="com.example.e68.app.presentation.manager.ManagerFragment"
-        android:label="Карта"
-        tools:layout="@layout/fragment_manager_map" />
 
     <fragment
         android:id="@+id/nav_manager_defects"
@@ -151,8 +163,6 @@
             <argument android:name="defectId" app:argType="long" />
         </action>
     </fragment>
-
-
 
     <fragment
         android:id="@+id/nav_manager_analytics"
@@ -171,24 +181,16 @@
          ══════════════════════════════════════════ -->
 
     <fragment
-        android:id="@+id/adminFragment"
+        android:id="@+id/nav_admin_users"
         android:name="com.example.e68.app.presentation.admin.AdminUsersFragment"
         android:label="Сотрудники"
         tools:layout="@layout/fragment_admin_users">
-
         <action
             android:id="@+id/action_adminUsersFragment_to_adminEditUserFragment"
             app:destination="@id/adminEditUserFragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />
-
     </fragment>
-
-    <fragment
-        android:id="@+id/nav_admin_users"
-        android:name="com.example.e68.app.presentation.admin.AdminUsersFragment"
-        android:label="Сотрудники"
-        tools:layout="@layout/fragment_admin_users" />
 
     <fragment
         android:id="@+id/nav_admin_defects"

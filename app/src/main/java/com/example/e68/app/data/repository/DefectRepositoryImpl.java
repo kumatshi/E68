@@ -1,5 +1,7 @@
 package com.example.e68.app.data.repository;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -23,6 +25,7 @@ import javax.inject.Singleton;
 @Singleton
 public class DefectRepositoryImpl implements DefectRepository {
 
+    private static final String TAG = "DefectRepository";
     private static final String COL = "defects";
 
     private final FirebaseFirestore db;
@@ -38,10 +41,6 @@ public class DefectRepositoryImpl implements DefectRepository {
         startRealtimeListener();
     }
 
-    // ─────────────────────────────────────────────
-    // REALTIME LISTENER
-    // ─────────────────────────────────────────────
-
     private void startRealtimeListener() {
         listenerReg = db.collection(COL)
                 .orderBy("createdAt", Query.Direction.DESCENDING)
@@ -53,12 +52,9 @@ public class DefectRepositoryImpl implements DefectRepository {
                         if (d != null) list.add(d);
                     }
                     _allDefects.postValue(list);
+                    Log.d(TAG, "Loaded " + list.size() + " defects from Firestore");
                 });
     }
-
-    // ─────────────────────────────────────────────
-    // READ
-    // ─────────────────────────────────────────────
 
     @Override
     public LiveData<List<Defect>> getAllDefects() {
@@ -78,14 +74,6 @@ public class DefectRepositoryImpl implements DefectRepository {
         return result;
     }
 
-    public LiveData<Defect> getDefectByFirestoreId(String firestoreId) {
-        MutableLiveData<Defect> result = new MutableLiveData<>();
-        db.collection(COL).document(firestoreId).get()
-                .addOnSuccessListener(doc -> result.postValue(docToDefect(doc)))
-                .addOnFailureListener(e -> result.postValue(null));
-        return result;
-    }
-
     @Override
     public LiveData<List<Defect>> getDefectsByStatus(String status) {
         MutableLiveData<List<Defect>> result = new MutableLiveData<>();
@@ -99,10 +87,6 @@ public class DefectRepositoryImpl implements DefectRepository {
         result.setValue(filtered);
         return result;
     }
-
-    // ─────────────────────────────────────────────
-    // CREATE
-    // ─────────────────────────────────────────────
 
     @Override
     public LiveData<Resource<Defect>> createDefect(Defect defect) {
@@ -118,26 +102,25 @@ public class DefectRepositoryImpl implements DefectRepository {
         defect.setCreatedAt(System.currentTimeMillis());
         defect.setCreatedBy(currentEmail);
 
-        // photoPath сохраняем как есть (content:// URI)
-        // Фото видно только на том устройстве где снято — это нормально
         Map<String, Object> data = defectToMap(defect);
         data.put("inspectorUid", currentUid);
+
+        Log.d(TAG, "Creating defect: " + data.toString());
 
         db.collection(COL).add(data)
                 .addOnSuccessListener(ref -> {
                     defect.setId(ref.getId().hashCode());
                     defect.setLocalUuid(ref.getId());
-                    result.postValue(Resource.success(defect));
+                    Log.d(TAG, "Defect created with ID: " + ref.getId());
+                    result.setValue(Resource.success(defect));
                 })
-                .addOnFailureListener(e ->
-                        result.postValue(Resource.error(e.getMessage(), null)));
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to create defect: " + e.getMessage());
+                    result.setValue(Resource.error(e.getMessage(), null));
+                });
 
         return result;
     }
-
-    // ─────────────────────────────────────────────
-    // UPDATE
-    // ─────────────────────────────────────────────
 
     @Override
     public LiveData<Resource<Defect>> updateDefect(Defect defect) {
@@ -150,22 +133,29 @@ public class DefectRepositoryImpl implements DefectRepository {
         }
 
         Map<String, Object> updates = new HashMap<>();
-        updates.put("status",      defect.getStatus());
+        updates.put("title",       defect.getTitle());
+        updates.put("type",        defect.getType());
+        updates.put("address",     defect.getAddress());
         updates.put("description", defect.getDescription());
         updates.put("severity",    defect.getSeverity());
+        updates.put("status",      defect.getStatus());
         updates.put("updatedAt",   System.currentTimeMillis());
 
-        db.collection(COL).document(defect.getLocalUuid())
+        final String localUuid = defect.getLocalUuid();
+
+        db.collection(COL).document(localUuid)
                 .update(updates)
-                .addOnSuccessListener(v -> result.postValue(Resource.success(defect)))
-                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
+                .addOnSuccessListener(v -> {
+                    Log.d(TAG, "Defect updated: " + localUuid);
+                    result.setValue(Resource.success(defect));
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to update defect: " + e.getMessage());
+                    result.setValue(Resource.error(e.getMessage(), null));
+                });
 
         return result;
     }
-
-    // ─────────────────────────────────────────────
-    // DELETE
-    // ─────────────────────────────────────────────
 
     @Override
     public LiveData<Resource<Void>> deleteDefect(long id) {
@@ -175,7 +165,10 @@ public class DefectRepositoryImpl implements DefectRepository {
         String firestoreId = null;
         if (all != null) {
             for (Defect d : all) {
-                if (d.getId() == id) { firestoreId = d.getLocalUuid(); break; }
+                if (d.getId() == id) {
+                    firestoreId = d.getLocalUuid();
+                    break;
+                }
             }
         }
 
@@ -184,25 +177,25 @@ public class DefectRepositoryImpl implements DefectRepository {
             return result;
         }
 
-        db.collection(COL).document(firestoreId).delete()
-                .addOnSuccessListener(v -> result.postValue(Resource.success(null)))
-                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
+        final String finalFirestoreId = firestoreId;
+
+        db.collection(COL).document(finalFirestoreId).delete()
+                .addOnSuccessListener(v -> {
+                    Log.d(TAG, "Defect deleted: " + finalFirestoreId);
+                    result.setValue(Resource.success(null));
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to delete defect: " + e.getMessage());
+                    result.setValue(Resource.error(e.getMessage(), null));
+                });
 
         return result;
     }
-
-    // ─────────────────────────────────────────────
-    // OFFLINE STUB
-    // ─────────────────────────────────────────────
 
     @Override
     public List<Defect> getUnsyncedDefects() {
         return new ArrayList<>();
     }
-
-    // ─────────────────────────────────────────────
-    // HELPERS
-    // ─────────────────────────────────────────────
 
     private Defect docToDefect(DocumentSnapshot doc) {
         if (doc == null || !doc.exists()) return null;
@@ -222,7 +215,6 @@ public class DefectRepositoryImpl implements DefectRepository {
         d.setCreatedBy(doc.getString("createdBy"));
         Long createdAt = doc.getLong("createdAt");
         if (createdAt != null) d.setCreatedAt(createdAt);
-        // ← читаем photoPath из Firestore
         d.setPhotoPath(doc.getString("photoPath"));
         return d;
     }
@@ -240,7 +232,6 @@ public class DefectRepositoryImpl implements DefectRepository {
         m.put("createdBy",   d.getCreatedBy());
         m.put("createdAt",   d.getCreatedAt());
         m.put("updatedAt",   d.getCreatedAt());
-        // ← сохраняем photoPath (content:// URI строкой)
         m.put("photoPath",   d.getPhotoPath());
         return m;
     }

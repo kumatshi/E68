@@ -11,6 +11,49 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- ══════════════════════ КНОПКИ УПРАВЛЕНИЯ ЗУМОМ ═════════════════════ -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|center_vertical"
+        android:layout_marginEnd="16dp"
+        android:orientation="vertical">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnZoomIn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="@color/surface">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_add"
+                app:tint="?attr/colorPrimary" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnZoomOut"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="@color/surface">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_remove"
+                app:tint="?attr/colorPrimary" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
     <!-- ══════════════════════ ПОИСКОВАЯ ПАНЕЛЬ ═════════════════════ -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -179,6 +222,7 @@
             app:tint="?attr/colorPrimary" />
 
     </com.google.android.material.card.MaterialCardView>
+
     <!-- ════════════ КНОПКА ОСТАНОВКИ ОТСЛЕЖИВАНИЯ ════════════════ -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/btnStopTracking"
@@ -243,6 +287,7 @@
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
+
     <!-- ════════════════ КАРТОЧКА ДЕФЕКТА (BOTTOM) ═════════════ -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardDefectPreview"

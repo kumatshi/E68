@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import android.util.Log;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,7 +26,7 @@ public class AdminUsersFragment extends Fragment {
     private FragmentAdminUsersBinding binding;
     private AdminViewModel viewModel;
     private AdminUsersAdapter adapter;
-    private static final String TAG = "AdminUsersFragment";
+    private static final String TAG = "AdminUsers";
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -40,7 +39,7 @@ public class AdminUsersFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Log.d(TAG, "onViewCreated: Фрагмент загружен!");  // ← Добавьте
+        Log.d(TAG, "onViewCreated: Фрагмент загружен!");
 
         viewModel = new ViewModelProvider(this).get(AdminViewModel.class);
 
@@ -60,8 +59,15 @@ public class AdminUsersFragment extends Fragment {
             args.putString("department", user.getDepartment());
             args.putBoolean("isActive", user.isActive());
 
-            Navigation.findNavController(requireView())
-                    .navigate(R.id.action_adminUsersFragment_to_adminEditUserFragment, args);
+            try {
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_adminUsersFragment_to_adminEditUserFragment, args);
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Navigation error: " + e.getMessage());
+                // Fallback - прямая навигация
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.adminEditUserFragment, args);
+            }
         });
 
         binding.usersRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -104,26 +110,35 @@ public class AdminUsersFragment extends Fragment {
     private void setupListeners() {
         // Кнопка "Добавить" в заголовке
         binding.btnAddUser.setOnClickListener(v -> {
-            Log.d("AdminUsers", "btnAddUser clicked!");  // ← Добавьте этот лог
-            try {
-                Navigation.findNavController(requireView())
-                        .navigate(R.id.action_adminUsersFragment_to_adminEditUserFragment);
-            } catch (Exception e) {
-                Log.e("AdminUsers", "Navigation error: " + e.getMessage());
-                Toast.makeText(requireContext(), "Ошибка: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
+            Log.d(TAG, "btnAddUser clicked!");
+            navigateToEditUser();
         });
 
         // FAB кнопка
         binding.fabAddUser.setOnClickListener(v -> {
-            Log.d("AdminUsers", "fabAddUser clicked!");  // ← Добавьте этот лог
-            try {
-                Navigation.findNavController(requireView())
-                        .navigate(R.id.action_adminUsersFragment_to_adminEditUserFragment);
-            } catch (Exception e) {
-                Log.e("AdminUsers", "Navigation error: " + e.getMessage());
-                Toast.makeText(requireContext(), "Ошибка: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
+            Log.d(TAG, "fabAddUser clicked!");
+            navigateToEditUser();
         });
+    }
+
+    private void navigateToEditUser() {
+        try {
+            // Пробуем использовать action из nav_graph
+            Navigation.findNavController(requireView())
+                    .navigate(R.id.action_adminUsersFragment_to_adminEditUserFragment);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Action not found, using direct navigation: " + e.getMessage());
+            // Fallback - прямая навигация
+            Bundle args = new Bundle();
+            args.putBoolean("isNewUser", true);
+            Navigation.findNavController(requireView())
+                    .navigate(R.id.adminEditUserFragment, args);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

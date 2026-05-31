@@ -225,4 +225,13 @@ public class UserRepositoryImpl implements UserRepository {
     public String getAccessToken() {
         return auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
     }
+    private void logAdminAction(String adminUid, String action, String targetUid) {
+        Map<String, Object> log = new HashMap<>();
+        log.put("adminUid", adminUid);
+        log.put("action", action);
+        log.put("targetUid", targetUid);
+        log.put("timestamp", System.currentTimeMillis());
+
+        db.collection("admin_logs").add(log);
+    }
 }

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:title="Редактировать дефект"
+            app:titleTextAppearance="?attr/textAppearanceTitleLarge" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="32dp">
+
+            <!-- НАЗВАНИЕ -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTitle"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Название дефекта *"
+                app:startIconDrawable="@drawable/ic_warning"
+                android:layout_marginTop="8dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:maxLines="2" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- ОПИСАНИЕ -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilDescription"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Описание"
+                android:layout_marginTop="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:minLines="2"
+                    android:maxLines="4"
+                    android:gravity="top" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- ТИП ДЕФЕКТА -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Тип дефекта *"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/defectTypeChipGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleLine="true"
+                    app:singleSelection="true" />
+            </HorizontalScrollView>
+
+            <!-- СЕРЬЁЗНОСТЬ -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Серьёзность"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/severityChipGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipLow"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Низкая"
+                    app:chipBackgroundColor="@color/selector_chip_bg"
+                    android:textColor="@color/selector_chip_text"
+                    app:chipStrokeColor="@color/selector_chip_stroke"
+                    app:chipStrokeWidth="1dp"
+                    app:chipIconTint="#06D6A0"
+                    app:chipIcon="@drawable/ic_circle" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipMedium"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Средняя"
+                    app:chipBackgroundColor="@color/selector_chip_bg"
+                    android:textColor="@color/selector_chip_text"
+                    app:chipStrokeColor="@color/selector_chip_stroke"
+                    app:chipStrokeWidth="1dp"
+                    app:chipIconTint="#FFD166"
+                    app:chipIcon="@drawable/ic_circle" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipHigh"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Высокая"
+                    app:chipBackgroundColor="@color/selector_chip_bg"
+                    android:textColor="@color/selector_chip_text"
+                    app:chipStrokeColor="@color/selector_chip_stroke"
+                    app:chipStrokeWidth="1dp"
+                    app:chipIconTint="#FF6B35"
+                    app:chipIcon="@drawable/ic_circle" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCritical"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Критично"
+                    app:chipBackgroundColor="@color/selector_chip_bg"
+                    android:textColor="@color/selector_chip_text"
+                    app:chipStrokeColor="@color/selector_chip_stroke"
+                    app:chipStrokeWidth="1dp"
+                    app:chipIconTint="#FF4757"
+                    app:chipIcon="@drawable/ic_circle" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- АДРЕС -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilAddress"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Адрес *"
+                app:startIconDrawable="@drawable/ic_location"
+                android:layout_marginTop="20dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapWords" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- КНОПКА СОХРАНИТЬ -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSubmit"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Сохранить изменения"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:icon="@drawable/ic_save"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp" />
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:indeterminateTint="@color/white"
+                    android:visibility="gone" />
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Прогресс загрузки данных -->
+    <ProgressBar
+        android:id="@+id/progressLoading"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/primary"
+        android:visibility="gone" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

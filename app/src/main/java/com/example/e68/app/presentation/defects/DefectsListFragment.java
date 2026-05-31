@@ -13,8 +13,10 @@ import com.example.e68.app.R;
 import com.example.e68.app.databinding.FragmentDefectsListBinding;
 import com.example.e68.app.domain.entity.Defect;
 import com.example.e68.app.presentation.common.BaseFragment;
+import com.example.e68.app.data.session.SessionManager;
 import dagger.hilt.android.AndroidEntryPoint;
 import java.util.List;
+import javax.inject.Inject;
 
 @AndroidEntryPoint
 public class DefectsListFragment extends BaseFragment<FragmentDefectsListBinding> {
@@ -22,6 +24,9 @@ public class DefectsListFragment extends BaseFragment<FragmentDefectsListBinding
     private DefectsViewModel viewModel;
     private DefectsAdapter adapter;
     private String currentFilter = "ALL";
+
+    @Inject
+    SessionManager sessionManager;
 
     @Override
     protected FragmentDefectsListBinding inflateBinding(@NonNull LayoutInflater inflater,
@@ -42,11 +47,22 @@ public class DefectsListFragment extends BaseFragment<FragmentDefectsListBinding
 
     private void setupRecyclerView() {
         adapter = new DefectsAdapter(defect -> {
-            // Навигация к деталям дефекта через Bundle (без SafeArgs/Directions)
             Bundle args = new Bundle();
             args.putLong("defectId", defect.getId());
-            Navigation.findNavController(requireView())
-                    .navigate(R.id.action_defectsList_to_defectDetail, args);
+
+            // Определяем текущий destination для правильного action
+            int currentDest = Navigation.findNavController(requireView()).getCurrentDestination().getId();
+
+            if (currentDest == R.id.nav_manager_defects) {
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_managerDefects_to_defectDetail, args);
+            } else if (currentDest == R.id.nav_admin_defects) {
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_adminDefects_to_defectDetail, args);
+            } else {
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_defectsList_to_defectDetail, args);
+            }
         });
         binding.defectsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.defectsRecyclerView.setAdapter(adapter);
@@ -66,19 +82,29 @@ public class DefectsListFragment extends BaseFragment<FragmentDefectsListBinding
     }
 
     private void setupFab() {
+        // Получаем текущую роль пользователя
+        String userRole = sessionManager != null ? sessionManager.getUserRole() : "INSPECTOR";
+
+        // Менеджер и Админ НЕ могут создавать дефекты
+        if ("MANAGER".equals(userRole) || "ADMIN".equals(userRole)) {
+            binding.fabCreateDefect.setVisibility(View.GONE);
+            return;
+        }
+
+        // Только INSPECTOR может создавать дефекты
         binding.fabCreateDefect.setOnClickListener(v ->
                 Navigation.findNavController(v)
                         .navigate(R.id.action_defectsList_to_createDefect));
 
         binding.defectsRecyclerView.addOnScrollListener(
                 new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView rv,
-                                   int dx, int dy) {
-                if (dy > 4)       binding.fabCreateDefect.shrink();
-                else if (dy < -4) binding.fabCreateDefect.extend();
-            }
-        });
+                    @Override
+                    public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView rv,
+                                           int dx, int dy) {
+                        if (dy > 4)       binding.fabCreateDefect.shrink();
+                        else if (dy < -4) binding.fabCreateDefect.extend();
+                    }
+                });
     }
 
     private void observeViewModel() {
@@ -86,10 +112,16 @@ public class DefectsListFragment extends BaseFragment<FragmentDefectsListBinding
                 binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE));
 
         viewModel.getFilteredDefects().observe(getViewLifecycleOwner(), defects -> {
+            android.util.Log.d("DefectsList", "Defects received: " + (defects != null ? defects.size() : 0));
+            if (defects != null && defects.size() > 0) {
+                for (Defect d : defects) {
+                    // Удалена строка с getInspectorUid()
+                    android.util.Log.d("DefectsList", "Defect: " + d.getTitle() + ", status: " + d.getStatus());
+                }
+            }
             adapter.submitList(defects);
-            binding.emptyState.setVisibility(defects.isEmpty() ? View.VISIBLE : View.GONE);
-            binding.defectsRecyclerView.setVisibility(
-                    defects.isEmpty() ? View.GONE : View.VISIBLE);
+            binding.emptyState.setVisibility(defects == null || defects.isEmpty() ? View.VISIBLE : View.GONE);
+            binding.defectsRecyclerView.setVisibility(defects == null || defects.isEmpty() ? View.GONE : View.VISIBLE);
         });
 
         viewModel.getAllDefects().observe(getViewLifecycleOwner(), this::updateStatsBadges);

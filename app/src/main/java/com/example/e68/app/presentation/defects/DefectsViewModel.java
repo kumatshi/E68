@@ -5,6 +5,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.e68.app.domain.entity.Defect;
+import com.example.e68.app.domain.repository.DefectRepository;
 import com.example.e68.app.domain.usecase.CreateDefectUseCase;
 import com.example.e68.app.domain.usecase.GetAllDefectsUseCase;
 import com.example.e68.app.domain.usecase.UpdateDefectUseCase;
@@ -24,6 +25,7 @@ public class DefectsViewModel extends BaseViewModel {
     private final GetAllDefectsUseCase getAllDefectsUseCase;
     private final CreateDefectUseCase createDefectUseCase;
     private final UpdateDefectUseCase updateDefectUseCase;
+    private final DefectRepository defectRepository; // Добавляем репозиторий
 
     private final MutableLiveData<String> _filter = new MutableLiveData<>("ALL");
     private final LiveData<List<Defect>> _allDefects;
@@ -32,10 +34,12 @@ public class DefectsViewModel extends BaseViewModel {
     @Inject
     public DefectsViewModel(GetAllDefectsUseCase getAllDefects,
                             CreateDefectUseCase createDefect,
-                            UpdateDefectUseCase updateDefect) {
+                            UpdateDefectUseCase updateDefect,
+                            DefectRepository defectRepository) {
         this.getAllDefectsUseCase = getAllDefects;
         this.createDefectUseCase = createDefect;
         this.updateDefectUseCase = updateDefect;
+        this.defectRepository = defectRepository;
 
         _allDefects = getAllDefectsUseCase.execute();
 
@@ -61,5 +65,10 @@ public class DefectsViewModel extends BaseViewModel {
     /** Вызывается из DefectDetailFragment для смены статуса */
     public LiveData<Resource<Defect>> updateDefect(Defect defect) {
         return updateDefectUseCase.execute(defect);
+    }
+
+    /** Вызывается из DefectDetailFragment для удаления дефекта */
+    public LiveData<Resource<Void>> deleteDefect(long defectId) {
+        return defectRepository.deleteDefect(defectId);
     }
 }

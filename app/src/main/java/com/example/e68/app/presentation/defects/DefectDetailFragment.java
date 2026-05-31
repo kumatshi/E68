@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.e68.app.R;
 import com.example.e68.app.databinding.FragmentDefectDetailBinding;
+import com.example.e68.app.data.session.SessionManager;
 import com.example.e68.app.domain.entity.Defect;
 import com.example.e68.app.presentation.common.BaseFragment;
 import com.example.e68.app.util.Resource;
@@ -25,6 +26,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -32,6 +35,9 @@ public class DefectDetailFragment extends BaseFragment<FragmentDefectDetailBindi
 
     private DefectsViewModel viewModel;
     private Defect currentDefect;
+
+    @Inject
+    SessionManager sessionManager;
 
     @Override
     protected FragmentDefectDetailBinding inflateBinding(@NonNull LayoutInflater inflater,
@@ -54,6 +60,67 @@ public class DefectDetailFragment extends BaseFragment<FragmentDefectDetailBindi
             showToast("Дефект не найден");
             Navigation.findNavController(requireView()).popBackStack();
         }
+
+        setupActionButtons();
+    }
+
+    private void setupActionButtons() {
+        String userRole = sessionManager != null ? sessionManager.getUserRole() : "INSPECTOR";
+
+        // Для MANAGER и ADMIN показываем кнопки редактирования и удаления
+        if ("MANAGER".equals(userRole) || "ADMIN".equals(userRole)) {
+            // Добавляем кнопки в тулбар
+            android.view.Menu menu = binding.toolbar.getMenu();
+            binding.toolbar.inflateMenu(R.menu.menu_defect_detail);
+
+            binding.toolbar.setOnMenuItemClickListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.action_edit_defect) {
+                    editDefect();
+                    return true;
+                } else if (itemId == R.id.action_delete_defect) {
+                    showDeleteConfirmation();
+                    return true;
+                }
+                return false;
+            });
+        } else {
+            // INSPECTOR - только изменение статуса
+            binding.btnChangeStatus.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void editDefect() {
+        if (currentDefect == null) return;
+
+        Bundle args = new Bundle();
+        args.putLong("defectId", currentDefect.getId());
+
+        Navigation.findNavController(requireView())
+                .navigate(R.id.editDefectFragment, args);
+    }
+
+    private void showDeleteConfirmation() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Удалить дефект")
+                .setMessage("Вы уверены, что хотите удалить этот дефект? Это действие необратимо.")
+                .setPositiveButton("Удалить", (dialog, which) -> deleteDefect())
+                .setNegativeButton("Отмена", null)
+                .show();
+    }
+
+    private void deleteDefect() {
+        if (currentDefect == null) return;
+
+        viewModel.deleteDefect(currentDefect.getId()).observe(getViewLifecycleOwner(), result -> {
+            if (result == null) return;
+            if (result.status == Resource.Status.SUCCESS) {
+                showToast("Дефект удалён");
+                Navigation.findNavController(requireView()).popBackStack();
+            } else if (result.status == Resource.Status.ERROR) {
+                showToast("Ошибка: " + result.message);
+            }
+        });
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -154,7 +221,6 @@ public class DefectDetailFragment extends BaseFragment<FragmentDefectDetailBindi
                                 Object model,
                                 com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
                                 boolean isFirstResource) {
-                            // URI недоступен — показываем заглушку
                             showNoPhoto();
                             return true;
                         }
@@ -166,7 +232,6 @@ public class DefectDetailFragment extends BaseFragment<FragmentDefectDetailBindi
                                 com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
                                 com.bumptech.glide.load.DataSource dataSource,
                                 boolean isFirstResource) {
-                            // Фото загружено — карточка уже видна
                             return false;
                         }
                     })
