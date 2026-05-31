@@ -4,21 +4,23 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
-        <item name="android:windowBackground">@color/background</item>
-        <item name="android:statusBarColor">@color/background</item>
-        <item name="android:navigationBarColor">@color/secondary</item>
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:statusBarColor">@color/background_dark</item>
+        <item name="android:navigationBarColor">@color/surface_dark</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.E68.MaterialAlertDialog</item>
         <item name="bottomSheetDialogTheme">@style/Theme.E68.BottomSheet</item>
-
-
-        <!-- или используйте цвет из вашей палитры -->
         <item name="colorOnSurfaceVariant">?attr/colorOnSurface</item>
+
+        <!-- Text Appearance Styles -->
+        <item name="textAppearanceHeadline6">@style/TextAppearance.E68.Title</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.E68.Subtitle</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.E68.Body</item>
     </style>
 
     <style name="ThemeOverlay.E68.MaterialAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="android:background">@color/surface_elevated</item>
-        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:background">@color/surface_elevated_dark</item>
+        <item name="android:textColor">@color/text_primary_dark</item>
     </style>
 
     <style name="Theme.E68.BottomSheet" parent="Theme.MaterialComponents.BottomSheetDialog">
@@ -41,24 +43,31 @@
         <item name="cornerSizeBottomRight">0dp</item>
     </style>
 
-    <!-- Text Styles -->
-    <style name="TextAppearance.E68.Title" parent="TextAppearance.MaterialComponents.Headline5">
-        <item name="android:textColor">@color/text_primary</item>
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- TEXT STYLES -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
 
-        <item name="android:textSize">24sp</item>
+    <style name="TextAppearance.E68.Title" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textColor">@color/text_primary_dark</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="TextAppearance.E68.Subtitle" parent="TextAppearance.MaterialComponents.Subtitle1">
-        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textColor">@color/text_primary_dark</item>
         <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="TextAppearance.E68.Body" parent="TextAppearance.MaterialComponents.Body1">
-        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColor">@color/text_secondary_dark</item>
         <item name="android:textSize">14sp</item>
     </style>
 
-    <!-- Button Styles -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- BUTTON STYLES -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
     <style name="Widget.E68.Button.Primary" parent="Widget.MaterialComponents.Button">
         <item name="backgroundTint">@color/primary</item>
         <item name="android:textColor">@color/white</item>
@@ -77,39 +86,79 @@
         <item name="android:paddingBottom">14dp</item>
     </style>
 
-    <!-- Input Style -->
-    <style name="Widget.E68.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <item name="boxStrokeColor">@color/selector_input_stroke</item>
-        <item name="boxBackgroundColor">@color/surface_elevated</item>
-        <item name="hintTextColor">@color/text_secondary</item>
-        <item name="android:textColorHint">@color/text_hint</item>
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- ТЁМНЫЕ СТИЛИ ДЛЯ ФОРМЫ СОЗДАНИЯ ДЕФЕКТА -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <style name="Widget.E68.TextInputLayout.Dark" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/selector_input_stroke_dark</item>
+        <item name="boxBackgroundColor">@color/surface_dark</item>
+        <item name="hintTextColor">@color/text_hint_dark</item>
+        <item name="android:textColorHint">@color/text_hint_dark</item>
         <item name="boxCornerRadiusTopStart">12dp</item>
         <item name="boxCornerRadiusTopEnd">12dp</item>
         <item name="boxCornerRadiusBottomStart">12dp</item>
         <item name="boxCornerRadiusBottomEnd">12dp</item>
-        <item name="shapeAppearance">@style/ShapeAppearance.E68.Input</item>
     </style>
 
-    <style name="ShapeAppearance.E68.Input" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">12dp</item>
+    <style name="Widget.E68.Button.Secondary.Dark" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/primary</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:backgroundTint">@color/surface_dark</item>
     </style>
 
-    <!-- Card Style -->
-    <style name="Widget.E68.Card" parent="Widget.MaterialComponents.CardView">
-        <item name="cardBackgroundColor">@color/surface_elevated</item>
-        <item name="cardElevation">0dp</item>
+    <style name="Widget.E68.Card.Dark" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/surface_dark</item>
+        <item name="cardElevation">2dp</item>
         <item name="cardCornerRadius">16dp</item>
-        <item name="strokeColor">@color/divider</item>
+        <item name="strokeColor">@color/divider_dark</item>
         <item name="strokeWidth">1dp</item>
     </style>
 
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- INPUT STYLES (ОСНОВНОЙ) -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <style name="Widget.E68.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/selector_input_stroke</item>
+        <item name="boxBackgroundColor">@color/surface_dark</item>
+        <item name="hintTextColor">@color/text_hint_dark</item>
+        <item name="android:textColorHint">@color/text_hint_dark</item>
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+    </style>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- CARD STYLES (ОСНОВНОЙ) -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <style name="Widget.E68.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/surface_dark</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="strokeColor">@color/divider_dark</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SWITCH STYLES -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
     <style name="SwitchOrange" parent="Theme.MaterialComponents">
         <item name="colorControlActivated">@color/primary</item>
-        <item name="colorSwitchThumbNormal">@color/text_hint</item>
-        <item name="android:colorForeground">@color/text_hint</item>
+        <item name="colorSwitchThumbNormal">@color/text_hint_dark</item>
+        <item name="android:colorForeground">@color/text_hint_dark</item>
     </style>
-    <!-- Базовый стиль кнопки для мобильных устройств -->
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- MOBILE BUTTON STYLES (для кнопок в экранах) -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
     <style name="AppTheme.MobileButton" parent="Widget.Material3.Button">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/button_height</item>
@@ -119,7 +168,6 @@
         <item name="cornerRadius">12dp</item>
     </style>
 
-    <!-- Outline кнопка -->
     <style name="AppTheme.MobileButton.Outline">
         <item name="android:backgroundTint">@android:color/transparent</item>
         <item name="android:strokeColor">?attr/colorPrimary</item>
@@ -127,7 +175,6 @@
         <item name="android:textColor">?attr/colorPrimary</item>
     </style>
 
-    <!-- Destructive кнопка (удаление) -->
     <style name="AppTheme.MobileButton.Destructive">
         <item name="android:backgroundTint">@color/defect_red</item>
         <item name="android:textColor">@android:color/white</item>

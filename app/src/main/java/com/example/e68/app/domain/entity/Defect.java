@@ -16,8 +16,9 @@ public class Defect {
     private double latitude;
     private double longitude;
     private String photoPath;
+    private String photoBase64; // ★ ДОБАВЛЕНО: хранение фото в Base64
     private long   createdAt;
-    private long   updatedAt;   // <-- ДОБАВЛЕНО
+    private long   updatedAt;
     private String createdBy;
 
     public Defect() {}
@@ -55,10 +56,13 @@ public class Defect {
     public String getPhotoPath()             { return photoPath; }
     public void   setPhotoPath(String v)     { this.photoPath = v; }
 
+    // ★ НОВЫЕ ГЕТТЕР И СЕТТЕР ДЛЯ PHOTO_BASE64 ★
+    public String getPhotoBase64()           { return photoBase64; }
+    public void   setPhotoBase64(String v)   { this.photoBase64 = v; }
+
     public long   getCreatedAt()             { return createdAt; }
     public void   setCreatedAt(long v)       { this.createdAt = v; }
 
-    // ДОБАВЛЕНО
     public long   getUpdatedAt()             { return updatedAt; }
     public void   setUpdatedAt(long v)       { this.updatedAt = v; }
 

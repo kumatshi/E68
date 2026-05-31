@@ -1,6 +1,7 @@
 package com.example.e68.app.presentation.defects;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import com.example.e68.app.data.remote.geocoder.GeocoderResponse;
 import com.example.e68.app.databinding.FragmentCreateDefectBinding;
 import com.example.e68.app.domain.entity.Defect;
 import com.example.e68.app.presentation.common.BaseFragment;
+import com.example.e68.app.util.ImageUtils;
 import com.example.e68.app.util.Resource;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -45,6 +47,7 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
 
     private CreateDefectViewModel viewModel;
     private FusedLocationProviderClient locationClient;
+    private ContentResolver contentResolver;
 
     private double pickedLat = 0;
     private double pickedLng = 0;
@@ -52,6 +55,7 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
     // Фото
     private Uri photoUri = null;
     private Uri cameraFileUri = null;
+    private String photoBase64 = null; // ★ Добавлено: Base64 строка фото
 
     private static final String[][] DEFECT_TYPES = {
             {"PH_001", "Выбоина"},
@@ -85,6 +89,7 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
                 if (Boolean.TRUE.equals(success) && cameraFileUri != null) {
                     photoUri = cameraFileUri;
                     showPhotoPreview(photoUri);
+                    convertPhotoToBase64(photoUri); // ★ Добавлено: конвертация фото
                 } else {
                     showToast("Фото не было сделано");
                 }
@@ -95,6 +100,7 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
                 if (uri != null) {
                     photoUri = uri;
                     showPhotoPreview(photoUri);
+                    convertPhotoToBase64(photoUri); // ★ Добавлено: конвертация фото
                 }
             });
 
@@ -111,12 +117,13 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(CreateDefectViewModel.class);
         locationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        contentResolver = requireContext().getContentResolver(); // ★ Добавлено
 
         setupToolbar();
         setupDefectTypeChips();
         setupSeverityChips();
         setupGpsButton();
-        setupAddressGeocoder(); // ← новое
+        setupAddressGeocoder();
         setupPhotoButtons();
         setupSubmitButton();
         observeViewModel();
@@ -178,10 +185,8 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
     // ── Яндекс Геокодер ───────────────────────────────────────────
 
     private void setupAddressGeocoder() {
-        // Сбрасываем ошибку и координаты когда пользователь редактирует адрес вручную
         binding.etAddress.addTextChangedListener(addressWatcher);
 
-        // Кнопка прямого геокодинга: введённый адрес → координаты
         binding.btnFindAddress.setOnClickListener(v -> {
             String address = binding.etAddress.getText().toString().trim();
             if (TextUtils.isEmpty(address)) {
@@ -208,6 +213,7 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
         binding.btnRemovePhoto.setOnClickListener(v -> {
             photoUri = null;
             cameraFileUri = null;
+            photoBase64 = null; // ★ Добавлено: очищаем Base64
             binding.ivPhotoPreview.setImageURI(null);
             binding.cardPhotoPreview.setVisibility(View.GONE);
         });
@@ -217,6 +223,17 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
         binding.btnSubmit.setOnClickListener(v -> {
             if (validate()) submitDefect();
         });
+    }
+
+    // ★ НОВЫЙ МЕТОД: конвертация фото в Base64
+    private void convertPhotoToBase64(Uri uri) {
+        showToast("Конвертация фото...");
+        photoBase64 = ImageUtils.uriToBase64(uri, contentResolver, 1024, 1024);
+        if (photoBase64 != null) {
+            showToast("Фото готово");
+        } else {
+            showToast("Ошибка конвертации фото");
+        }
     }
 
     //  GPS
@@ -234,7 +251,6 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
                             pickedLat = location.getLatitude();
                             pickedLng = location.getLongitude();
                             updateCoordinatesUI();
-                            // ← После GPS автоматически заполняем поле адреса
                             viewModel.reverseGeocode(pickedLat, pickedLng);
                         } else {
                             showToast("Не удалось получить координаты");
@@ -301,24 +317,20 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
             ok = false;
         }
 
-        // ── Обновлённая валидация адреса ────────────────────────────
         String address = binding.etAddress.getText().toString().trim();
         boolean hasCoords  = pickedLat != 0 || pickedLng != 0;
         boolean hasAddress = !TextUtils.isEmpty(address);
 
         if (!hasCoords && !hasAddress) {
-            // Совсем ничего нет
             binding.tilAddress.setError("Укажите адрес или определите GPS");
             ok = false;
         } else if (hasAddress && !hasCoords) {
-            // Текст есть, но координаты не подтверждены — запускаем геокодер
             binding.tilAddress.setError("Нажмите «Найти» чтобы проверить адрес");
             viewModel.geocodeAddress(address);
             ok = false;
         } else {
             binding.tilAddress.setError(null);
         }
-        // ────────────────────────────────────────────────────────────
 
         return ok;
     }
@@ -332,9 +344,12 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
         defect.setAddress(binding.etAddress.getText().toString().trim());
         defect.setLatitude(pickedLat);
         defect.setLongitude(pickedLng);
-        if (photoUri != null) {
-            defect.setPhotoPath(photoUri.toString());
+
+        // ★ Изменено: сохраняем Base64 вместо пути
+        if (photoBase64 != null) {
+            defect.setPhotoBase64(photoBase64);
         }
+
         viewModel.createDefect(defect);
     }
 
@@ -357,7 +372,6 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
             }
         });
 
-        // ── Прямой геокодинг: адрес → координаты ────────────────────
         viewModel.getGeocodeResult().observe(getViewLifecycleOwner(), response -> {
             if (response == null) {
                 binding.tilAddress.setError("Адрес не найден, проверьте написание");
@@ -371,10 +385,8 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
             pickedLat = point.getLatitude();
             pickedLng = point.getLongitude();
 
-            // Заменяем поле адреса форматированным ответом от Яндекса
             String formatted = response.getFirstAddress();
             if (formatted != null) {
-                // Снимаем watcher чтобы setText не сбросил pickedLat/pickedLng
                 binding.etAddress.removeTextChangedListener(addressWatcher);
                 binding.etAddress.setText(formatted);
                 binding.etAddress.setSelection(formatted.length());
@@ -386,16 +398,13 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
             showToast("Адрес подтверждён ✓");
         });
 
-        // ── Обратный геокодинг: GPS → адрес ─────────────────────────
         viewModel.getReverseGeocodeResult().observe(getViewLifecycleOwner(), response -> {
             if (response == null) {
-                // Координаты уже есть из fetchGps(), просто адрес не определился
                 showToast("Координаты получены, адрес не определён");
                 return;
             }
             String address = response.getFirstAddress();
             if (address != null) {
-                // Снимаем watcher чтобы setText не сбросил координаты
                 binding.etAddress.removeTextChangedListener(addressWatcher);
                 binding.etAddress.setText(address);
                 binding.etAddress.setSelection(address.length());
@@ -405,7 +414,6 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
             showToast("Адрес определён по GPS ✓");
         });
 
-        // ── Прогресс геокодера ───────────────────────────────────────
         viewModel.isGeocodingLoading().observe(getViewLifecycleOwner(), loading -> {
             binding.progressGeocoder.setVisibility(loading ? View.VISIBLE : View.GONE);
             binding.btnFindAddress.setEnabled(!loading);
@@ -414,15 +422,10 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
 
     // ── Вспомогательные ──────────────────────────────────────────
 
-    /**
-     * TextWatcher в поле класса — чтобы можно было снимать/добавлять его
-     * при программном setText из геокодера (иначе он сбросит координаты).
-     */
     private final TextWatcher addressWatcher = new TextWatcher() {
         @Override public void beforeTextChanged(CharSequence s, int i, int c, int a) {}
         @Override public void onTextChanged(CharSequence s, int i, int b, int c) {
             binding.tilAddress.setError(null);
-            // Пользователь сам редактирует → старые координаты больше не актуальны
             pickedLat = 0;
             pickedLng = 0;
             binding.tvGpsCoords.setVisibility(View.GONE);
@@ -430,7 +433,6 @@ public class CreateDefectFragment extends BaseFragment<FragmentCreateDefectBindi
         @Override public void afterTextChanged(Editable s) {}
     };
 
-    /** Обновляет строку с координатами под кнопкой GPS */
     private void updateCoordinatesUI() {
         binding.tvGpsCoords.setText(String.format("📍 %.5f, %.5f", pickedLat, pickedLng));
         binding.tvGpsCoords.setVisibility(View.VISIBLE);

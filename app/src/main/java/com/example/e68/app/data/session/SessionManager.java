@@ -12,10 +12,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext;
 @Singleton
 public class SessionManager {
     private static final String TAG = "SessionManager";
-    private static final String PREF_NAME = "auth_prefs";
-    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
-    private static final String KEY_USER_ROLE = "user_role";
+    private static final String PREF_NAME = "user_session";
     private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_USER_EMAIL = "user_email";
+    private static final String KEY_USER_ROLE = "user_role";
+    private static final String KEY_USER_NAME = "user_name";
+    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
 
     private final SharedPreferences prefs;
 
@@ -25,46 +27,57 @@ public class SessionManager {
         Log.d(TAG, "SessionManager initialized");
     }
 
-    public void saveLoginSession(String userId, String role) {
-        Log.d(TAG, "saveLoginSession called - userId: " + userId + ", role: " + role);
-        if (userId == null || userId.isEmpty()) {
-            Log.e(TAG, "saveLoginSession: userId is null or empty!");
-            return;
-        }
-        if (role == null || role.isEmpty()) {
-            Log.e(TAG, "saveLoginSession: role is null or empty, setting default INSPECTOR");
-            role = "INSPECTOR";
-        }
-
-        boolean success = prefs.edit()
+    // Сохранение сессии после успешного входа
+    public void saveSession(String userId, String email, String role, String name) {
+        Log.d(TAG, "saveSession: userId=" + userId + ", email=" + email + ", role=" + role);
+        prefs.edit()
+                .putString(KEY_USER_ID, userId)
+                .putString(KEY_USER_EMAIL, email)
+                .putString(KEY_USER_ROLE, role)
+                .putString(KEY_USER_NAME, name)
                 .putBoolean(KEY_IS_LOGGED_IN, true)
+                .apply();
+    }
+
+    // ★ ДОБАВЛЕНО: сохранение сессии (совместимость с существующим кодом)
+    public void saveLoginSession(String userId, String role) {
+        Log.d(TAG, "saveLoginSession: userId=" + userId + ", role=" + role);
+        prefs.edit()
                 .putString(KEY_USER_ID, userId)
                 .putString(KEY_USER_ROLE, role)
-                .commit(); // Используем commit для немедленного сохранения
-
-        Log.d(TAG, "Session saved successfully: " + success);
-        Log.d(TAG, "Verification - isLoggedIn: " + isLoggedIn() + ", role: " + getUserRole());
+                .putBoolean(KEY_IS_LOGGED_IN, true)
+                .apply();
     }
 
+    // Очистка сессии при выходе
     public void clearSession() {
-        Log.d(TAG, "clearSession called");
-        prefs.edit().clear().commit();
-        Log.d(TAG, "Session cleared");
+        Log.d(TAG, "clearSession");
+        prefs.edit().clear().apply();
     }
 
+    // Проверка авторизован ли пользователь
     public boolean isLoggedIn() {
-        boolean result = prefs.getBoolean(KEY_IS_LOGGED_IN, false);
-        Log.d(TAG, "isLoggedIn: " + result);
-        return result;
+        boolean isLoggedIn = prefs.getBoolean(KEY_IS_LOGGED_IN, false);
+        Log.d(TAG, "isLoggedIn: " + isLoggedIn);
+        return isLoggedIn;
     }
 
+    // Получение данных пользователя
     public String getUserId() {
         return prefs.getString(KEY_USER_ID, null);
     }
 
+    public String getUserEmail() {
+        return prefs.getString(KEY_USER_EMAIL, null);
+    }
+
     public String getUserRole() {
-        String role = prefs.getString(KEY_USER_ROLE, null);
+        String role = prefs.getString(KEY_USER_ROLE, "INSPECTOR");
         Log.d(TAG, "getUserRole: " + role);
         return role;
+    }
+
+    public String getUserName() {
+        return prefs.getString(KEY_USER_NAME, "");
     }
 }

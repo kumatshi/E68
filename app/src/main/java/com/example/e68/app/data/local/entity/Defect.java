@@ -77,4 +77,14 @@ public class Defect {
 
     public boolean isSynced() { return isSynced; }
     public void setSynced(boolean synced) { isSynced = synced; }
+    // Добавьте это поле в класс Defect
+    private String photoBase64; // Фото в формате Base64
+
+    public String getPhotoBase64() {
+        return photoBase64;
+    }
+
+    public void setPhotoBase64(String photoBase64) {
+        this.photoBase64 = photoBase64;
+    }
 }

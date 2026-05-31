@@ -6,4 +6,5 @@
 
     <!-- Кнопки -->
     <dimen name="button_height">48dp</dimen>
+
 </resources>

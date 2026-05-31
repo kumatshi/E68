@@ -4,11 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@color/background_dark">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/background_dark"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -16,8 +17,11 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_arrow_back"
+            app:navigationIconTint="@color/text_primary"
             app:title="Новый дефект"
-            app:titleTextAppearance="?attr/textAppearanceTitleLarge" />
+            app:titleCentered="true"
+            app:titleTextColor="@color/text_primary"
+            app:titleTextAppearance="@style/TextAppearance.E68.Title" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -31,83 +35,98 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="8dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="16dp"
             android:paddingBottom="32dp">
 
-            <!-- НАЗВАНИЕ -->
+            <!-- НАЗВАНИЕ ДЕФЕКТА -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilTitle"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                style="@style/Widget.E68.TextInputLayout.Dark"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Название дефекта *"
+                android:hint="Название дефекта"
                 app:startIconDrawable="@drawable/ic_warning"
-                android:layout_marginTop="8dp">
+                app:startIconTint="@color/primary"
+                app:endIconMode="clear_text"
+                app:endIconDrawable="@drawable/ic_close"
+                android:layout_marginBottom="16dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapSentences"
                     android:maxLines="2"
-                    android:imeOptions="actionNext" />
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- ОПИСАНИЕ -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilDescription"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                style="@style/Widget.E68.TextInputLayout.Dark"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Описание (необязательно)"
-                android:layout_marginTop="12dp">
+                android:hint="Описание"
+                app:startIconDrawable="@drawable/ic_description"
+                app:startIconTint="@color/text_hint"
+                android:layout_marginBottom="24dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapSentences|textMultiLine"
-                    android:minLines="2"
-                    android:maxLines="4"
-                    android:gravity="top" />
+                    android:minLines="3"
+                    android:maxLines="6"
+                    android:gravity="top"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ТИП ДЕФЕКТА -->
+            <!-- ТИП ДЕФЕКТА СЕКЦИЯ -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Тип дефекта *"
-                android:textAppearance="?attr/textAppearanceLabelLarge"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="8dp" />
+                android:text="Тип дефекта"
+                android:textAppearance="@style/TextAppearance.E68.Subtitle"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="none">
+                android:scrollbars="none"
+                android:layout_marginBottom="24dp">
+
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/defectTypeChipGroup"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:singleLine="true"
-                    app:singleSelection="true" />
+                    app:singleSelection="true"
+                    app:chipSpacing="8dp" />
             </HorizontalScrollView>
 
-            <!-- СЕРЬЁЗНОСТЬ -->
+            <!-- СЕРЬЁЗНОСТЬ СЕКЦИЯ -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Серьёзность"
-                android:textAppearance="?attr/textAppearanceLabelLarge"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="8dp" />
+                android:textAppearance="@style/TextAppearance.E68.Subtitle"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/severityChipGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:singleSelection="true"
-                app:selectionRequired="true">
+                app:selectionRequired="true"
+                app:chipSpacing="8dp"
+                android:layout_marginBottom="24dp">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipLow"
@@ -115,9 +134,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:text="Низкая"
-                    app:chipBackgroundColor="@color/selector_chip_bg"
-                    android:textColor="@color/selector_chip_text"
-                    app:chipStrokeColor="@color/selector_chip_stroke"
+                    app:chipBackgroundColor="@color/selector_chip_bg_dark"
+                    android:textColor="@color/selector_chip_text_dark"
+                    app:chipStrokeColor="@color/selector_chip_stroke_dark"
                     app:chipStrokeWidth="1dp"
                     app:chipIconTint="#06D6A0"
                     app:chipIcon="@drawable/ic_circle" />
@@ -129,9 +148,9 @@
                     android:layout_height="36dp"
                     android:text="Средняя"
                     android:checked="true"
-                    app:chipBackgroundColor="@color/selector_chip_bg"
-                    android:textColor="@color/selector_chip_text"
-                    app:chipStrokeColor="@color/selector_chip_stroke"
+                    app:chipBackgroundColor="@color/selector_chip_bg_dark"
+                    android:textColor="@color/selector_chip_text_dark"
+                    app:chipStrokeColor="@color/selector_chip_stroke_dark"
                     app:chipStrokeWidth="1dp"
                     app:chipIconTint="#FFD166"
                     app:chipIcon="@drawable/ic_circle" />
@@ -142,9 +161,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:text="Высокая"
-                    app:chipBackgroundColor="@color/selector_chip_bg"
-                    android:textColor="@color/selector_chip_text"
-                    app:chipStrokeColor="@color/selector_chip_stroke"
+                    app:chipBackgroundColor="@color/selector_chip_bg_dark"
+                    android:textColor="@color/selector_chip_text_dark"
+                    app:chipStrokeColor="@color/selector_chip_stroke_dark"
                     app:chipStrokeWidth="1dp"
                     app:chipIconTint="#FF6B35"
                     app:chipIcon="@drawable/ic_circle" />
@@ -154,148 +173,163 @@
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:text="Критично"
-                    app:chipBackgroundColor="@color/selector_chip_bg"
-                    android:textColor="@color/selector_chip_text"
-                    app:chipStrokeColor="@color/selector_chip_stroke"
+                    android:text="Критичная"
+                    app:chipBackgroundColor="@color/selector_chip_bg_dark"
+                    android:textColor="@color/selector_chip_text_dark"
+                    app:chipStrokeColor="@color/selector_chip_stroke_dark"
                     app:chipStrokeWidth="1dp"
                     app:chipIconTint="#FF4757"
                     app:chipIcon="@drawable/ic_circle" />
 
             </com.google.android.material.chip.ChipGroup>
 
-            <!-- МЕСТОПОЛОЖЕНИЕ -->
+            <!-- МЕСТОПОЛОЖЕНИЕ СЕКЦИЯ -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Местоположение *"
-                android:textAppearance="?attr/textAppearanceLabelLarge"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="8dp" />
+                android:text="Местоположение"
+                android:textAppearance="@style/TextAppearance.E68.Subtitle"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
 
-            <!-- Кнопка GPS + координаты -->
-            <LinearLayout
+            <!-- Карточка геолокации -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.E68.Card.Dark"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                app:cardCornerRadius="16dp"
+                android:layout_marginBottom="16dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnGetGps"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Определить GPS"
-                    app:icon="@drawable/ic_location"
-                    app:iconPadding="6dp" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tvGpsCoords"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:textAppearance="?attr/textAppearanceBodySmall"
-                    android:textColor="?attr/colorPrimary"
-                    android:visibility="gone"
-                    android:ellipsize="end"
-                    android:maxLines="1" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnGetGps"
+                        style="@style/Widget.E68.Button.Secondary.Dark"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:text="Определить GPS"
+                        app:icon="@drawable/ic_location"
+                        app:iconGravity="textStart" />
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/tvGpsCoords"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.E68.Body"
+                        android:textColor="@color/primary"
+                        android:visibility="gone"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:background="@drawable/bg_coords_dark"
+                        android:fontFamily="monospace" />
 
-            <!-- Поле адреса -->
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Адрес -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilAddress"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                style="@style/Widget.E68.TextInputLayout.Dark"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Адрес (или GPS выше)"
-                app:startIconDrawable="@drawable/ic_location">
+                android:hint="Адрес"
+                app:startIconDrawable="@drawable/ic_location_on"
+                app:startIconTint="@color/primary"
+                android:layout_marginBottom="12dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etAddress"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapWords"
-                    android:imeOptions="actionDone" />
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ↓↓↓ ГЕОКОДЕР: кнопка + спиннер (добавлено) ↓↓↓ -->
+            <!-- Геокодер кнопки -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginTop="6dp"
-                android:layout_marginBottom="4dp">
+                android:layout_marginBottom="24dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnFindAddress"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Найти адрес"
-                    app:icon="@drawable/ic_location"
-                    app:iconPadding="6dp" />
+                    android:layout_height="36dp"
+                    android:text="Проверить адрес"
+                    android:textColor="@color/primary"
+                    app:icon="@drawable/ic_search"
+                    app:iconTint="@color/primary" />
 
                 <ProgressBar
                     android:id="@+id/progressGeocoder"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginStart="12dp"
-                    android:indeterminateTint="?attr/colorPrimary"
+                    android:indeterminateTint="@color/primary"
                     android:visibility="gone" />
 
             </LinearLayout>
-            <!-- ↑↑↑ конец блока геокодера ↑↑↑ -->
 
-            <!-- ФОТОГРАФИЯ -->
+            <!-- ФОТОГРАФИЯ СЕКЦИЯ -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Фотография"
-                android:textAppearance="?attr/textAppearanceLabelLarge"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="8dp" />
+                android:textAppearance="@style/TextAppearance.E68.Subtitle"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
 
+            <!-- Кнопки фото -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:gravity="center"
+                android:layout_marginBottom="16dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnTakePhoto"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.E68.Button.Secondary.Dark"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="Сфотографировать"
+                    android:layout_weight="1"
+                    android:text="Камера"
                     app:icon="@drawable/ic_camera"
-                    app:iconPadding="6dp" />
+                    app:iconGravity="textStart" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPickPhoto"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.E68.Button.Secondary.Dark"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="Из галереи"
+                    android:text="Галерея"
                     app:icon="@drawable/ic_gallery"
-                    app:iconPadding="6dp" />
+                    app:iconGravity="textStart" />
 
             </LinearLayout>
 
-            <!-- Превью фото -->
+            <!-- Превью фото карточка -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardPhotoPreview"
+                style="@style/Widget.E68.Card.Dark"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                android:visibility="gone">
+                android:layout_height="220dp"
+                app:cardCornerRadius="16dp"
+                android:visibility="gone"
+                android:layout_marginBottom="24dp">
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -313,25 +347,31 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="top|end"
-                        android:layout_margin="8dp"
+                        android:layout_margin="12dp"
                         android:text="Удалить"
-                        android:textColor="#FF4757"
+                        android:textColor="@color/error"
                         app:icon="@drawable/ic_delete"
-                        app:iconTint="#FF4757"
-                        app:iconPadding="4dp" />
+                        app:iconTint="@color/error" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="4dp"
+                        android:layout_gravity="bottom"
+                        android:background="@drawable/bg_gradient_dark" />
 
                 </FrameLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- КНОПКА СОЗДАТЬ -->
+            <!-- КНОПКА СОЗДАНИЯ -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp">
+                android:layout_marginTop="8dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSubmit"
+                    style="@style/Widget.E68.Button.Primary"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:text="Создать дефект"
@@ -339,12 +379,12 @@
                     android:textStyle="bold"
                     app:icon="@drawable/ic_add"
                     app:iconGravity="textStart"
-                    app:iconPadding="8dp" />
+                    app:iconPadding="12dp" />
 
                 <ProgressBar
                     android:id="@+id/progressBar"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:layout_gravity="center"
                     android:indeterminateTint="@color/white"
                     android:visibility="gone" />

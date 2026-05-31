@@ -1,5 +1,6 @@
 package com.example.e68.app.presentation.defects;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.example.e68.app.databinding.FragmentDefectDetailBinding;
 import com.example.e68.app.data.session.SessionManager;
 import com.example.e68.app.domain.entity.Defect;
 import com.example.e68.app.presentation.common.BaseFragment;
+import com.example.e68.app.util.ImageUtils;
 import com.example.e68.app.util.Resource;
 
 import java.text.SimpleDateFormat;
@@ -188,55 +190,32 @@ public class DefectDetailFragment extends BaseFragment<FragmentDefectDetailBindi
         binding.tvCreatedAt.setText(new SimpleDateFormat("dd MMMM yyyy, HH:mm",
                 new Locale("ru")).format(new Date(d.getCreatedAt())));
 
-        loadPhoto(d.getPhotoPath());
+        // ★ ИЗМЕНЕНО: загружаем фото из Base64
+        loadPhoto(d.getPhotoBase64());
 
         binding.btnChangeStatus.setOnClickListener(v -> showStatusDialog(d));
     }
 
     // ═══════════════════════════════════════════════════════════
-    // ФОТО
+    // ФОТО (изменён для поддержки Base64)
     // ═══════════════════════════════════════════════════════════
 
-    private void loadPhoto(@Nullable String photoPath) {
-        if (photoPath == null || photoPath.isEmpty()) {
+    private void loadPhoto(@Nullable String photoBase64) {
+        if (photoBase64 == null || photoBase64.isEmpty()) {
             showNoPhoto();
             return;
         }
 
         try {
-            Uri uri = Uri.parse(photoPath);
-            binding.cardPhoto.setVisibility(View.VISIBLE);
-            binding.cardNoPhoto.setVisibility(View.GONE);
-
-            Glide.with(requireContext())
-                    .load(uri)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
-                    .placeholder(R.drawable.ic_camera)
-                    .error(R.drawable.ic_camera)
-                    .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(
-                                @Nullable com.bumptech.glide.load.engine.GlideException e,
-                                Object model,
-                                com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
-                                boolean isFirstResource) {
-                            showNoPhoto();
-                            return true;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(
-                                android.graphics.drawable.Drawable resource,
-                                Object model,
-                                com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
-                                com.bumptech.glide.load.DataSource dataSource,
-                                boolean isFirstResource) {
-                            return false;
-                        }
-                    })
-                    .into(binding.ivPhoto);
-
+            // Конвертируем Base64 в Bitmap
+            Bitmap bitmap = ImageUtils.base64ToBitmap(photoBase64);
+            if (bitmap != null) {
+                binding.cardPhoto.setVisibility(View.VISIBLE);
+                binding.cardNoPhoto.setVisibility(View.GONE);
+                binding.ivPhoto.setImageBitmap(bitmap);
+            } else {
+                showNoPhoto();
+            }
         } catch (Exception e) {
             showNoPhoto();
         }

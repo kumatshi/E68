@@ -208,6 +208,7 @@ public class DefectRepositoryImpl implements DefectRepository {
         d.setSeverity(doc.getString("severity"));
         d.setStatus(doc.getString("status"));
         d.setAddress(doc.getString("address"));
+        d.setPhotoBase64(doc.getString("photoBase64")); // ← ДОБАВЬТЕ ЭТУ СТРОКУ
         Double lat = doc.getDouble("latitude");
         Double lng = doc.getDouble("longitude");
         if (lat != null) d.setLatitude(lat);
@@ -233,6 +234,7 @@ public class DefectRepositoryImpl implements DefectRepository {
         m.put("createdAt",   d.getCreatedAt());
         m.put("updatedAt",   d.getCreatedAt());
         m.put("photoPath",   d.getPhotoPath());
+        m.put("photoBase64", d.getPhotoBase64());
         return m;
     }
 }

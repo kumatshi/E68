@@ -18,7 +18,6 @@ import com.example.e68.app.presentation.MainActivity;
 import com.example.e68.app.R;
 import com.example.e68.app.data.session.SessionManager;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import javax.inject.Inject;
 
@@ -30,19 +29,13 @@ public class SplashActivity extends AppCompatActivity {
     @Inject
     SessionManager sessionManager;
 
-    private FirebaseAuth auth;
-    private FirebaseFirestore firestore;
-
     private View logoContainer;
     private LottieAnimationView lottieLogo;
     private View textContainer;
     private ProgressBar progressBar;
     private TextView tvVersion;
 
-    private final long splashDelay = 2000L; // Уменьшил до 2 секунд
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private long startTime;
-    private boolean isNavigating = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,14 +43,11 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
-
         initViews();
         startAnimations();
 
-        // Проверяем пользователя
-        checkUserAndNavigate();
+        // Простая задержка перед переходом
+        mainHandler.postDelayed(this::navigate, 1500);
     }
 
     private void initViews() {
@@ -76,8 +66,6 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void startAnimations() {
-        startTime = System.currentTimeMillis();
-
         Animation scaleFadeIn = AnimationUtils.loadAnimation(this, R.anim.splash_scale_fade_in);
         logoContainer.startAnimation(scaleFadeIn);
         logoContainer.setVisibility(View.VISIBLE);
@@ -91,76 +79,24 @@ public class SplashActivity extends AppCompatActivity {
         }, 800);
     }
 
-    private void checkUserAndNavigate() {
-        Log.d("SplashActivity", "=== checkUserAndNavigate ===");
+    private void navigate() {
+        Log.d("SplashActivity", "=== navigate ===");
         Log.d("SplashActivity", "sessionManager.isLoggedIn() = " + sessionManager.isLoggedIn());
-        Log.d("SplashActivity", "auth.getCurrentUser() = " + (auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : "null"));
 
-        // Проверяем сохранённую сессию
-        if (sessionManager.isLoggedIn() && auth.getCurrentUser() != null) {
-            String savedRole = sessionManager.getUserRole();
-            Log.d("SplashActivity", "✅ User already logged in with role: " + savedRole);
-            navigateToMain(savedRole);
+        Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+
+        // Если есть сессия, передаём роль
+        if (sessionManager.isLoggedIn()) {
+            String role = sessionManager.getUserRole();
+            Log.d("SplashActivity", "User has session, role: " + role);
+            intent.putExtra("USER_ROLE", role);
+        } else {
+            Log.d("SplashActivity", "No session, going to login screen");
+            // Не передаём роль - MainActivity покажет LoginFragment
         }
-        else if (auth.getCurrentUser() != null) {
-            Log.d("SplashActivity", "Firebase user exists but no session, loading role");
-            loadUserRoleAndSaveSession(auth.getCurrentUser().getUid());
-        }
-        else {
-            Log.d("SplashActivity", "❌ No user, going to login");
-            navigateToMain(null);
-        }
-    }
 
-    private void loadUserRoleAndSaveSession(String uid) {
-        Log.d("SplashActivity", "loadUserRoleAndSaveSession for uid: " + uid);
-        showProgress(true);
-
-        firestore.collection("users").document(uid)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    String role = documentSnapshot.getString("role");
-                    if (role == null || role.isEmpty()) {
-                        role = "INSPECTOR";
-                    }
-                    Log.d("SplashActivity", "Saving session: uid=" + uid + ", role=" + role);
-                    sessionManager.saveLoginSession(uid, role);
-                    navigateToMain(role);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("SplashActivity", "Failed to load role", e);
-                    sessionManager.saveLoginSession(uid, "INSPECTOR");
-                    navigateToMain("INSPECTOR");
-                });
-    }
-
-    private void navigateToMain(String role) {
-        if (isNavigating) {
-            Log.d("SplashActivity", "Already navigating, skipping");
-            return;
-        }
-        isNavigating = true;
-
-        long elapsedTime = System.currentTimeMillis() - startTime;
-        long remainingDelay = Math.max(0, splashDelay - elapsedTime);
-
-        Log.d("SplashActivity", "navigateToMain called with role: " + role + ", delay: " + remainingDelay + "ms");
-
-        mainHandler.postDelayed(() -> {
-            Log.d("SplashActivity", "Starting MainActivity with role: " + role);
-            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-            if (role != null) {
-                intent.putExtra("USER_ROLE", role);
-            }
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-        }, remainingDelay);
-    }
-
-    private void showProgress(boolean show) {
-        if (progressBar != null) {
-            progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-        }
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

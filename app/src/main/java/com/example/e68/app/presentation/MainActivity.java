@@ -28,6 +28,7 @@ import com.example.e68.app.databinding.ActivityMainBinding;
 import com.example.e68.app.data.repository.UserRepositoryImpl;
 import com.example.e68.app.data.session.SessionManager;
 import com.example.e68.app.domain.entity.User;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,10 +50,11 @@ public class MainActivity extends AppCompatActivity {
     UserRepositoryImpl userRepository;
 
     @Inject
-    SessionManager sessionManager; // ДОБАВЛЕНО
+    SessionManager sessionManager;
 
     private ActivityMainBinding binding;
     private NavController navController;
+    private FirebaseAuth auth;
 
     private String currentUserRole = "INSPECTOR";
 
@@ -68,33 +70,39 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // ★★★ ВАЖНО: Сначала получаем роль из Intent или SessionManager ★★★
-        String role = getIntent().getStringExtra("USER_ROLE");
+        auth = FirebaseAuth.getInstance();
 
-        // Если роль не передана в Intent, берём из SessionManager
-        if ((role == null || role.isEmpty()) && sessionManager != null) {
-            role = sessionManager.getUserRole();
-            Log.d(TAG, "Role loaded from SessionManager: " + role);
-        }
-
-        // Если роль всё ещё null, используем INSPECTOR
-        if (role == null || role.isEmpty()) {
-            role = "INSPECTOR";
-        }
-
-        Log.d(TAG, "Final user role: " + role);
-        currentUserRole = role;
-        applyRoleMenu(role);
-
-        // Устанавливаем startDestination ПОСЛЕ применения меню
         setupNavController();
 
-        // Принудительно устанавливаем startDestination для роли
-        setStartDestination(getProfileDestinationForRole(role));
+        // ★★★ ПОЛУЧАЕМ РОЛЬ ИЗ INTENT ★★★
+        String role = getIntent().getStringExtra("USER_ROLE");
+
+        Log.d(TAG, "onCreate - role from intent: " + role);
+        Log.d(TAG, "onCreate - sessionManager.isLoggedIn(): " + sessionManager.isLoggedIn());
+
+        // Если нет роли и нет сессии - показываем экран входа
+        if (role == null && !sessionManager.isLoggedIn()) {
+            Log.d(TAG, "No role and no session - showing login screen");
+            // Устанавливаем startDestination на loginFragment
+            setStartDestination(R.id.loginFragment);
+        } else {
+            // Есть роль или сессия - загружаем профиль
+            if (role == null && sessionManager.isLoggedIn()) {
+                role = sessionManager.getUserRole();
+                Log.d(TAG, "Role loaded from SessionManager: " + role);
+            }
+
+            if (role == null || role.isEmpty()) {
+                role = "INSPECTOR";
+            }
+
+            Log.d(TAG, "Final user role: " + role);
+            currentUserRole = role;
+            applyRoleMenu(role);
+            setStartDestination(getProfileDestinationForRole(role));
+        }
 
         observeCurrentUser();
-
-        // Запрашиваем разрешения на хранение
         checkAndRequestStoragePermissions();
     }
 
@@ -225,14 +233,17 @@ public class MainActivity extends AppCompatActivity {
         }
         navController = host.getNavController();
 
-        // Показываем/скрываем нижнюю панель
         navController.addOnDestinationChangedListener((ctrl, dest, args) -> {
             boolean hide = HIDE_NAV.contains(dest.getId());
-            binding.bottomNavigation.setVisibility(hide ? View.GONE : View.VISIBLE);
+            if (binding.bottomNavigation != null) {
+                binding.bottomNavigation.setVisibility(hide ? View.GONE : View.VISIBLE);
+            }
         });
 
-        binding.bottomNavigation.setOnItemSelectedListener(item -> safeNavigateTo(item.getItemId()));
-        binding.bottomNavigation.setOnItemReselectedListener(item -> { /* no-op */ });
+        if (binding.bottomNavigation != null) {
+            binding.bottomNavigation.setOnItemSelectedListener(item -> safeNavigateTo(item.getItemId()));
+            binding.bottomNavigation.setOnItemReselectedListener(item -> { /* no-op */ });
+        }
     }
 
     private void setStartDestinationBasedOnRole() {
@@ -286,7 +297,6 @@ public class MainActivity extends AppCompatActivity {
         navGraph.setStartDestination(startDestId);
         Log.d(TAG, "Start destination changed from " + currentStartDest + " to " + startDestId);
 
-        // Если текущий фрагмент - старый startDestination, переходим на новый
         NavDestination current = navController.getCurrentDestination();
         if (current != null && current.getId() == currentStartDest) {
             navController.navigate(startDestId);
@@ -330,8 +340,10 @@ public class MainActivity extends AppCompatActivity {
                 menuRes = R.menu.menu_bottom_nav_inspector;
                 break;
         }
-        binding.bottomNavigation.getMenu().clear();
-        binding.bottomNavigation.inflateMenu(menuRes);
+        if (binding.bottomNavigation != null) {
+            binding.bottomNavigation.getMenu().clear();
+            binding.bottomNavigation.inflateMenu(menuRes);
+        }
         Log.d(TAG, "Menu applied for role: " + role);
     }
 

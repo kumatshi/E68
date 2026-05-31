@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
+import androidx.navigation.NavController;
 
 import com.example.e68.app.R;
 import com.example.e68.app.databinding.FragmentLoginBinding;
@@ -59,24 +60,32 @@ public class LoginFragment extends BaseFragment<FragmentLoginBinding> {
 
             MainActivity activity = (MainActivity) requireActivity();
 
-            // ★★★ ВАЖНО: Обновляем startDestination на профиль ★★★
+            // Обновляем навигацию после входа
             activity.refreshNavigationAfterLogin();
 
             // Применяем меню для роли
             if (user.isInspector()) {
                 activity.applyRoleMenu("INSPECTOR");
-                Navigation.findNavController(requireView())
-                        .navigate(R.id.action_loginFragment_to_mainFragment);
-
             } else if (user.isManager()) {
                 activity.applyRoleMenu("MANAGER");
-                Navigation.findNavController(requireView())
-                        .navigate(R.id.action_loginFragment_to_managerFragment);
-
             } else if (user.isAdmin()) {
                 activity.applyRoleMenu("ADMIN");
-                Navigation.findNavController(requireView())
-                        .navigate(R.id.action_loginFragment_to_adminFragment);
+            }
+
+            // Просто закрываем LoginFragment, возвращаясь назад
+            // Главный экран уже будет показывать правильный startDestination
+            NavController navController = Navigation.findNavController(requireView());
+
+            // Проверяем текущий destination и действуем соответственно
+            int currentId = navController.getCurrentDestination() != null
+                    ? navController.getCurrentDestination().getId() : -1;
+
+            if (currentId == R.id.loginFragment) {
+                // Если мы всё ещё на LoginFragment, просто идём назад
+                navController.popBackStack();
+            } else {
+                // Если нет, пробуем найти главный экран
+                navController.navigate(R.id.nav_defects);
             }
         });
     }
