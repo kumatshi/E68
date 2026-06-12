@@ -198,6 +198,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
 
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("com.google.firebase:firebase-messaging:23.4.0")
+    implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+
+
 
 
 
