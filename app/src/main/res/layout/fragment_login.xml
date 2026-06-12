@@ -135,7 +135,7 @@
                         android:id="@+id/loginButton"
                         style="@style/Widget.E68.Button.Primary"
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
+                        android:layout_height="wrap_content"
                         android:text="@string/btn_login"
                         android:textSize="16sp"
                         android:textStyle="bold" />
